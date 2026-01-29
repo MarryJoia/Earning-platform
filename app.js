@@ -1,49 +1,21 @@
-const firebaseConfig={apiKey:"YOUR_KEY",authDomain:"YOUR_DOMAIN",projectId:"YOUR_ID"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-function generateRef(){return Math.random().toString(36).substring(2,8).toUpperCase();}
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
+  authDomain: "earning-platform-a267f.firebaseapp.com",
+  projectId: "earning-platform-a267f",
+  storageBucket: "earning-platform-a267f.firebasestorage.app",
+  messagingSenderId: "785014377238",
+  appId: "1:785014377238:web:e693e96aacbe4b151c1e37",
+  measurementId: "G-CJTYVGW3PM"
+};
 
-function signup(){
- const e=email.value,p=password.value,r=referral.value;
- auth.createUserWithEmailAndPassword(e,p).then(()=>{
-  db.collection("users").doc(e).set({
-   earnings:0,package:"None",refCode:generateRef(),referredBy:r
-  });
-  location.href="login.html";
- });
-}
-
-function login(){
- auth.signInWithEmailAndPassword(email.value,password.value)
- .then(()=>location.href="dashboard.html");
-}
-
-function selectPackage(pkg,daily){
- const u=auth.currentUser.email;
- db.collection("users").doc(u).update({
-  package:pkg,
-  earnings:firebase.firestore.FieldValue.increment(daily)
- });
- loadData();
-}
-
-function loadData(){
- const u=auth.currentUser.email;
- db.collection("users").doc(u).get().then(d=>{
-  earnings.innerText=d.data().earnings;
-  package.innerText=d.data().package;
- });
-}
-
-function withdraw(){
- db.collection("withdraws").add({
-  user:auth.currentUser.email,
-  amount:amount.value,
-  method:method.value,
-  number:number.value,
-  status:"Pending"
- });
- alert("Request Submitted");
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
