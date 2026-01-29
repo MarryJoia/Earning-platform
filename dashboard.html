@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+<h2>Dashboard</h2>
+<p>Package: <span id="package"></span></p>
+<p>Earnings: $<span id="earnings">0</span></p>
+
+<button onclick="selectPackage('50$',1)">50$ Package</button>
+<button onclick="selectPackage('100$',2)">100$ Package</button>
+<button onclick="selectPackage('200$',4)">200$ Package</button>
+<button onclick="selectPackage('500$',10)">500$ Package</button>
+
+<br><br>
+<a href="withdraw.html">Withdraw</a>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+<script>
+firebase.auth().onAuthStateChanged(u=>{
+ if(u) loadData();
+ else location.href="login.html";
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Withdraw</title></head>
+<body>
+<h2>Withdraw Request</h2>
+<select id="method">
+<option>JazzCash</option>
+<option>Easypaisa</option>
+</select>
+<input id="number" placeholder="Account Number">
+<input id="amount" type="number" placeholder="Amount">
+<button onclick="withdraw()">Submit</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
