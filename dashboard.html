@@ -1,43 +1,78 @@
 <!DOCTYPE html>
-<html>
-<head><title>Dashboard</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Earning Platform</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #00D4FF, #6C63FF);
+      min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
+      padding-top: 50px;
+    }
+
+    .dashboard {
+      background: #fff; padding: 40px; border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2); width: 400px; text-align: center;
+    }
+
+    h2 { color: #333; margin-bottom: 25px; }
+
+    .info { margin-bottom: 10px; font-size: 16px; color: #555; }
+    .balance { font-size: 22px; font-weight: 600; color: #6C63FF; margin-bottom: 20px; }
+
+    .btn { display: block; width: 100%; padding: 12px; margin: 10px 0;
+      border-radius: 8px; border: none; background: #6C63FF; color: #fff;
+      font-size: 16px; cursor: pointer; transition: background 0.3s; }
+    .btn:hover { background: #5950d4; }
+    .logout { background: #FF4C4C; }
+    .logout:hover { background: #d63f3f; }
+    .package-buttons button { width: 100%; margin: 8px 0; }
+  </style>
+</head>
 <body>
 
-<h2>Dashboard</h2>
+<div class="dashboard">
+  <h2>Welcome!</h2>
+  <div class="info">Email: <span id="userEmail">Loading...</span></div>
+  <div class="balance">Balance: $<span id="balance">0</span></div>
 
-<p>Email: <span id="email"></span></p>
-<p>Package: <span id="package">None</span></p>
-<p>Balance: $<span id="balance">0</span></p>
+  <div class="package-buttons">
+    <button class="btn" onclick="buyPackage(50, 5)">Buy $50 Package (Daily $5)</button>
+    <button class="btn" onclick="buyPackage(100, 12)">Buy $100 Package (Daily $12)</button>
+    <button class="btn" onclick="buyPackage(200, 25)">Buy $200 Package (Daily $25)</button>
+  </div>
 
-<h3>Packages</h3>
+  <button class="btn" onclick="claimDaily()">Claim Daily Earning</button>
+  <button class="btn logout" onclick="logout()">Logout</button>
+</div>
 
-<button onclick="buyPackage(50,1)">50$ Package</button>
-<button onclick="buyPackage(100,2)">100$ Package</button>
-<button onclick="buyPackage(200,4)">200$ Package</button>
-<button onclick="buyPackage(500,10)">500$ Package</button>
-
-<br><br>
-<button onclick="claimDaily()">Claim Daily Earning</button>
-<br><br>
-<button onclick="logout()">Logout</button>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="app.js"></script>
-
 <script>
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) location.href = "login.html";
-  document.getElementById("email").innerText = user.email;
+  // Show user info & balance
+  firebase.auth().onAuthStateChanged(function(user) {
+    if(user){
+      document.getElementById('userEmail').textContent = user.email;
 
-  firebase.database().ref("users/" + user.uid)
-    .on("value", snap => {
-      const d = snap.val();
-      document.getElementById("balance").innerText = d?.balance || 0;
-      document.getElementById("package").innerText = d?.package || "None";
-    });
-});
+      // Real-time balance
+      firebase.database().ref('users/' + user.uid).on('value', function(snapshot){
+        const data = snapshot.val();
+        document.getElementById('balance').textContent = data.balance || 0;
+      });
+
+    } else {
+      window.location.href = "login.html";
+    }
+  });
 </script>
 
 </body>
