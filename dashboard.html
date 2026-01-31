@@ -5,130 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Earning Platform</title>
 
+  <!-- Prevent caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
-  <!-- Google Material Icons -->
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body {
-      background: linear-gradient(135deg, #00D4FF, #6C63FF);
-      min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
-      padding-top: 50px;
-    }
-
-    .dashboard {
-      background: #fff; padding: 40px; border-radius: 12px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.2); width: 400px; text-align: center;
-      transition: transform 0.3s;
-    }
-    .dashboard:hover { transform: translateY(-5px); }
-
-    h2 { color: #333; margin-bottom: 20px; }
-
-    .info { margin-bottom: 5px; font-size: 16px; color: #555; display: flex; align-items: center; justify-content: center; gap: 5px; }
-    .balance { font-size: 22px; font-weight: 600; color: #6C63FF; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-    .btn { display: block; width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
-      border: none; background: #6C63FF; color: #fff; font-size: 16px; cursor: pointer; transition: all 0.3s; }
-    .btn:hover { background: #5950d4; transform: scale(1.03); }
-    .logout { background: #FF4C4C; }
-    .logout:hover { background: #d63f3f; }
-
-    .package-buttons button { width: 100%; margin: 8px 0; display: flex; align-items: center; justify-content: space-between; }
-    .package-buttons .icon { font-size: 20px; margin-right: 8px; }
-
-    /* Progress bar */
-    .progress-container { background: #eee; border-radius: 8px; overflow: hidden; margin: 15px 0; height: 20px; width: 100%; }
-    .progress-bar { height: 100%; width: 0; background: #6C63FF; text-align: center; color: white; font-size: 12px; line-height: 20px; border-radius: 8px; transition: width 1s ease-in-out; }
-
-    /* Responsive */
-    @media(max-width:450px){ .dashboard{width:90%; padding:25px;} }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+    body{background:linear-gradient(135deg,#00D4FF,#6C63FF);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding-top:50px;}
+    .dashboard{background:#fff;padding:40px;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.2);width:400px;text-align:center;transition:transform 0.3s;}
+    .dashboard:hover{transform:translateY(-5px);}
+    h2{color:#333;margin-bottom:20px;}
+    .info{margin-bottom:5px;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .balance{font-size:22px;font-weight:600;color:#6C63FF;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn{display:block;width:100%;padding:12px;margin:10px 0;border-radius:8px;border:none;background:#6C63FF;color:#fff;font-size:16px;cursor:pointer;transition:all 0.3s;}
+    .btn:hover{background:#5950d4;transform:scale(1.03);}
+    .logout{background:#FF4C4C;}
+    .logout:hover{background:#d63f3f;}
+    .package-buttons button{width:100%;margin:8px 0;display:flex;align-items:center;justify-content:space-between;}
+    .package-buttons .icon{font-size:20px;margin-right:8px;}
+    .progress-container{background:#eee;border-radius:8px;overflow:hidden;margin:15px 0;height:20px;width:100%;}
+    .progress-bar{height:100%;width:0;background:#6C63FF;text-align:center;color:white;font-size:12px;line-height:20px;border-radius:8px;transition:width 1s ease-in-out;}
+    .deposit{margin-top:20px;text-align:left;border-top:1px solid #ddd;padding-top:20px;}
+    .deposit h3{color:#333;margin-bottom:10px;text-align:center;}
+    .deposit p{font-size:14px;margin:5px 0;}
+    .deposit input[type="file"]{margin-top:10px;}
+    .deposit button{margin-top:10px;}
+    @media(max-width:450px){.dashboard{width:90%;padding:25px;}}
   </style>
 </head>
 <body>
 
 <div class="dashboard">
   <h2>Welcome!</h2>
-  <div class="info">
-    <span class="material-icons">account_circle</span>
-    Email: <span id="userEmail">Loading...</span>
-  </div>
-  <div class="balance">
-    <span class="material-icons">account_balance_wallet</span>
-    $<span id="balance">0</span>
-  </div>
+  <div class="info"><span class="material-icons">account_circle</span>Email: <span id="userEmail">Loading...</span></div>
+  <div class="balance"><span class="material-icons">account_balance_wallet</span>$<span id="balance">0</span></div>
 
   <div class="package-buttons">
-    <button class="btn" onclick="buyPackage(50, 5)">
-      <span class="icon material-icons">local_offer</span> $50 Package <span>Daily $5</span>
-    </button>
-    <button class="btn" onclick="buyPackage(100, 12)">
-      <span class="icon material-icons">local_offer</span> $100 Package <span>Daily $12</span>
-    </button>
-    <button class="btn" onclick="buyPackage(200, 25)">
-      <span class="icon material-icons">local_offer</span> $200 Package <span>Daily $25</span>
-    </button>
+    <button class="btn" onclick="buyPackage(50,5)"><span class="icon material-icons">local_offer</span>$50 Package <span>Daily $5</span></button>
+    <button class="btn" onclick="buyPackage(100,12)"><span class="icon material-icons">local_offer</span>$100 Package <span>Daily $12</span></button>
+    <button class="btn" onclick="buyPackage(200,25)"><span class="icon material-icons">local_offer</span>$200 Package <span>Daily $25</span></button>
   </div>
 
   <button class="btn" onclick="claimDaily()">Claim Daily Earning</button>
 
-  <div class="progress-container">
-    <div class="progress-bar" id="dailyProgress">0%</div>
+  <div class="progress-container"><div class="progress-bar" id="dailyProgress">0%</div></div>
+
+  <div class="deposit">
+    <h3>Deposit Funds</h3>
+    <p>JazzCash: <strong>03007927545 (Umair Ashraf)</strong></p>
+    <p>Easypaisa: <strong>0311-XXXXXXX</strong></p>
+    <p>Upload Screenshot after payment:</p>
+    <input type="file" id="depositScreenshot" accept="image/*">
+    <button class="btn" onclick="uploadDeposit()">Upload Screenshot</button>
   </div>
 
   <button class="btn logout" onclick="logout()">Logout</button>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js?v=1"></script>
 <script>
-  const progressBar = document.getElementById('dailyProgress');
+const progressBar=document.getElementById('dailyProgress');
 
-  firebase.auth().onAuthStateChanged(function(user) {
+firebase.auth().onAuthStateChanged(function(user){
+  if(user){
+    document.getElementById('userEmail').textContent=user.email;
+    firebase.database().ref('users/'+user.uid).on('value',function(snapshot){
+      const data=snapshot.val()||{};
+      document.getElementById('balance').textContent=data.balance||0;
+      const lastClaim=data.lastClaim||0;
+      const now=Date.now();
+      const percent=Math.min(Math.floor((now-lastClaim)/86400000*100),100);
+      progressBar.style.width=percent+'%';
+      progressBar.textContent=percent+'%';
+    });
+  }else{
+    window.location.href="login.html";
+  }
+});
+
+setInterval(()=>{
+  firebase.auth().onAuthStateChanged(function(user){
     if(user){
-      document.getElementById('userEmail').textContent = user.email;
-
-      firebase.database().ref('users/' + user.uid).on('value', function(snapshot){
-        const data = snapshot.val() || {};
-
-        // Balance
-        document.getElementById('balance').textContent = data.balance || 0;
-
-        // Daily claim progress (percentage of 24 hours)
-        const lastClaim = data.lastClaim || 0;
-        const now = Date.now();
-        const diff = now - lastClaim;
-        const percent = Math.min(Math.floor((diff/86400000)*100), 100);
-        progressBar.style.width = percent + '%';
-        progressBar.textContent = percent + '%';
+      firebase.database().ref('users/'+user.uid).once('value').then(snap=>{
+        const data=snap.val()||{};
+        const lastClaim=data.lastClaim||0;
+        const now=Date.now();
+        const percent=Math.min(Math.floor((now-lastClaim)/86400000*100),100);
+        progressBar.style.width=percent+'%';
+        progressBar.textContent=percent+'%';
       });
-
-    } else {
-      window.location.href = "login.html";
     }
   });
+},5000);
 
-  // Animate progress bar every 5 sec
-  setInterval(()=>{
-    firebase.auth().onAuthStateChanged(function(user){
-      if(user){
-        firebase.database().ref('users/' + user.uid).once('value').then(snap=>{
-          const data = snap.val() || {};
-          const lastClaim = data.lastClaim || 0;
-          const now = Date.now();
-          const percent = Math.min(Math.floor((now-lastClaim)/86400000*100), 100);
-          progressBar.style.width = percent + '%';
-          progressBar.textContent = percent + '%';
-        });
-      }
+function uploadDeposit(){
+  const user=firebase.auth().currentUser;
+  if(!user)return alert("Login required");
+  const file=document.getElementById('depositScreenshot').files[0];
+  if(!file)return alert("Please select a file");
+  const storageRef=firebase.storage().ref('deposits/'+user.uid+'/'+Date.now()+'-'+file.name);
+  const uploadTask=storageRef.put(file);
+  uploadTask.on('state_changed',null,(error)=>alert("Upload failed: "+error.message),()=>{
+    uploadTask.snapshot.ref.getDownloadURL().then(url=>{
+      firebase.database().ref('deposits/'+user.uid).push({screenshot:url,timestamp:Date.now()});
+      alert("Screenshot uploaded successfully! Admin will verify your deposit.");
+      document.getElementById('depositScreenshot').value='';
     });
-  },5000);
+  });
+});
 </script>
 
 </body>
