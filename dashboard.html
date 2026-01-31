@@ -1,28 +1,54 @@
 <!DOCTYPE html>
 <html>
-<head><title>Dashboard</title></head>
+<head>
+  <title>Dashboard</title>
+</head>
 <body>
-<h2>Dashboard</h2>
-<p>Package: <span id="package"></span></p>
-<p>Earnings: $<span id="earnings">0</span></p>
 
-<button onclick="selectPackage('50$',1)">50$ Package</button>
-<button onclick="selectPackage('100$',2)">100$ Package</button>
-<button onclick="selectPackage('200$',4)">200$ Package</button>
-<button onclick="selectPackage('500$',10)">500$ Package</button>
+<h2>Dashboard</h2>
+
+<p>Email: <span id="userEmail"></span></p>
+<p>Package: <span id="package">None</span></p>
+<p>Balance: $<span id="balance">0</span></p>
+
+<h3>Packages</h3>
+
+<button onclick="buyPackage(50,1)">50$ Package (Daily $1)</button>
+<button onclick="buyPackage(100,2)">100$ Package (Daily $2)</button>
+<button onclick="buyPackage(200,4)">200$ Package (Daily $4)</button>
+<button onclick="buyPackage(500,10)">500$ Package (Daily $10)</button>
 
 <br><br>
-<a href="withdraw.html">Withdraw</a>
+<button onclick="claimDaily()">Claim Daily Earning</button>
+<br><br>
 
+<a href="withdraw.html">Withdraw</a>
+<br><br>
+<button onclick="logout()">Logout</button>
+
+<!-- Firebase scripts (Realtime DB) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script src="app.js"></script>
+
 <script>
-firebase.auth().onAuthStateChanged(u=>{
- if(u) loadData();
- else location.href="login.html";
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("userEmail").innerText = user.email;
+
+    firebase.database().ref("users/" + user.uid)
+      .on("value", snap => {
+        const d = snap.val();
+        document.getElementById("balance").innerText = d?.balance || 0;
+        document.getElementById("package").innerText = d?.package || "None";
+      });
+  } else {
+    location.href = "login.html";
+  }
 });
 </script>
+
 </body>
 </html>
