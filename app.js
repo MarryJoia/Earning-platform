@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
   authDomain: "earning-platform-a267f.firebaseapp.com",
@@ -9,87 +9,67 @@ const firebaseConfig = {
   appId: "1:785014377238:web:e693e96aacbe4b151c1e37"
 };
 
-// 🔥 MUST: initialize Firebase
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Firebase services
+// Services
 const auth = firebase.auth();
 const database = firebase.database();
 
-// ---------- SIGN UP ----------
-function signUp() {
+// ================= SIGNUP =================
+window.signUp = function () {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-
-      database.ref("users/" + user.uid).set({
+    .then((cred) => {
+      database.ref("users/" + cred.user.uid).set({
         email: email,
         balance: 0
       });
-
       alert("Signup successful");
       window.location.href = "dashboard.html";
     })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
+    .catch(err => alert(err.message));
+};
 
-// ---------- LOGIN ----------
-function login() {
+// ================= LOGIN =================
+window.login = function () {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      window.location.href = "dashboard.html";
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
-// ---------- AUTH CHECK ----------
-auth.onAuthStateChanged((user) => {
-  if (user && document.getElementById("userEmail")) {
-    document.getElementById("userEmail").innerText = user.email;
+    .then(() => window.location.href = "dashboard.html")
+    .catch(err => alert(err.message));
+};
 
-    database.ref("users/" + user.uid).on("value", (snapshot) => {
-      const data = snapshot.val();
-      document.getElementById("balance").innerText = data?.balance || 0;
-    });
-  }
-});
-
-// ---------- BUY PACKAGE ----------
-function buyPackage(amount, daily) {
+// ================= BUY PACKAGE =================
+window.buyPackage = function (amount, daily) {
   const user = auth.currentUser;
   if (!user) return alert("Login required");
 
   database.ref("users/" + user.uid).update({
-    package: amount,
+    package: "$" + amount,
     dailyEarning: daily,
-    lastClaim: Date.now()
+    lastClaim: 0
+  }).then(() => {
+    alert("Package activated");
   });
+};
 
-  alert("Package activated!");
-}
-
-// ---------- DAILY EARNING ----------
-function claimDaily() {
+// ================= DAILY CLAIM =================
+window.claimDaily = function () {
   const user = auth.currentUser;
   if (!user) return;
 
   const ref = database.ref("users/" + user.uid);
-  ref.once("value").then((snap) => {
-    const data = snap.val();
+  ref.once("value").then(snap => {
+    const d = snap.val();
     const now = Date.now();
 
-    if (!data.lastClaim || now - data.lastClaim >= 86400000) {
+    if (now - (d.lastClaim || 0) >= 86400000) {
       ref.update({
-        balance: (data.balance || 0) + (data.dailyEarning || 0),
+        balance: (d.balance || 0) + (d.dailyEarning || 0),
         lastClaim: now
       });
       alert("Daily earning added");
@@ -97,11 +77,9 @@ function claimDaily() {
       alert("Already claimed today");
     }
   });
-}
+};
 
-// ---------- LOGOUT ----------
-function logout() {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
-  });
-}
+// ================= LOGOUT =================
+window.logout = function () {
+  auth.signOut().then(() => location.href = "login.html");
+};
