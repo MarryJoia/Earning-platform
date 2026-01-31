@@ -1,19 +1,53 @@
 <!DOCTYPE html>
-<html>
-<head><title>Signup</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup - Earning Platform</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Styles -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body {
+      display: flex; justify-content: center; align-items: center; height: 100vh;
+      background: linear-gradient(135deg, #6C63FF, #00D4FF);
+    }
+    .container {
+      background: #fff; padding: 40px; border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2); width: 350px; text-align: center;
+    }
+    h2 { margin-bottom: 20px; color: #333; }
+    input {
+      width: 100%; padding: 12px; margin: 10px 0;
+      border-radius: 6px; border: 1px solid #ccc; font-size: 14px;
+    }
+    button {
+      width: 100%; padding: 12px; background: #6C63FF;
+      border: none; color: white; border-radius: 6px; cursor: pointer;
+      font-size: 16px; margin-top: 10px; transition: background 0.3s;
+    }
+    button:hover { background: #5950d4; }
+    p { margin-top: 15px; font-size: 14px; }
+    a { color: #6C63FF; text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
 <body>
 
-<h2>Signup</h2>
+<div class="container">
+  <h2>Create Account</h2>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button onclick="signUp()">Sign Up</button>
+  <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
 
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
-
-<button onclick="signUp()">Create Account</button>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
