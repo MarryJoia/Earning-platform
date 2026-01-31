@@ -51,3 +51,57 @@ function login() {
       alert(error.message);
     });
 }
+// ---------- AUTH CHECK ----------
+auth.onAuthStateChanged((user) => {
+  if (user && document.getElementById("userEmail")) {
+    document.getElementById("userEmail").innerText = user.email;
+
+    database.ref("users/" + user.uid).on("value", (snapshot) => {
+      const data = snapshot.val();
+      document.getElementById("balance").innerText = data?.balance || 0;
+    });
+  }
+});
+
+// ---------- BUY PACKAGE ----------
+function buyPackage(amount, daily) {
+  const user = auth.currentUser;
+  if (!user) return alert("Login required");
+
+  database.ref("users/" + user.uid).update({
+    package: amount,
+    dailyEarning: daily,
+    lastClaim: Date.now()
+  });
+
+  alert("Package activated!");
+}
+
+// ---------- DAILY EARNING ----------
+function claimDaily() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const ref = database.ref("users/" + user.uid);
+  ref.once("value").then((snap) => {
+    const data = snap.val();
+    const now = Date.now();
+
+    if (!data.lastClaim || now - data.lastClaim >= 86400000) {
+      ref.update({
+        balance: (data.balance || 0) + (data.dailyEarning || 0),
+        lastClaim: now
+      });
+      alert("Daily earning added");
+    } else {
+      alert("Already claimed today");
+    }
+  });
+}
+
+// ---------- LOGOUT ----------
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
