@@ -1,130 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Earning Platform</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Earning Platform</title>
 
-  <!-- Prevent caching -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="app.js?v=1"></script>
 
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
-    body{background:linear-gradient(135deg,#00D4FF,#6C63FF);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding-top:50px;}
-    .dashboard{background:#fff;padding:40px;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.2);width:400px;text-align:center;transition:transform 0.3s;}
-    .dashboard:hover{transform:translateY(-5px);}
-    h2{color:#333;margin-bottom:20px;}
-    .info{margin-bottom:5px;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;gap:5px;}
-    .balance{font-size:22px;font-weight:600;color:#6C63FF;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px;}
-    .btn{display:block;width:100%;padding:12px;margin:10px 0;border-radius:8px;border:none;background:#6C63FF;color:#fff;font-size:16px;cursor:pointer;transition:all 0.3s;}
-    .btn:hover{background:#5950d4;transform:scale(1.03);}
-    .logout{background:#FF4C4C;}
-    .logout:hover{background:#d63f3f;}
-    .package-buttons button{width:100%;margin:8px 0;display:flex;align-items:center;justify-content:space-between;}
-    .package-buttons .icon{font-size:20px;margin-right:8px;}
-    .progress-container{background:#eee;border-radius:8px;overflow:hidden;margin:15px 0;height:20px;width:100%;}
-    .progress-bar{height:100%;width:0;background:#6C63FF;text-align:center;color:white;font-size:12px;line-height:20px;border-radius:8px;transition:width 1s ease-in-out;}
-    .deposit{margin-top:20px;text-align:left;border-top:1px solid #ddd;padding-top:20px;}
-    .deposit h3{color:#333;margin-bottom:10px;text-align:center;}
-    .deposit p{font-size:14px;margin:5px 0;}
-    .deposit input[type="file"]{margin-top:10px;}
-    .deposit button{margin-top:10px;}
-    @media(max-width:450px){.dashboard{width:90%;padding:25px;}}
-  </style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:linear-gradient(135deg,#00D4FF,#6C63FF);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding-top:50px;}
+.dashboard{background:#fff;padding:40px;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.2);width:450px;text-align:center;transition:transform 0.3s;}
+.dashboard:hover{transform:translateY(-5px);}
+h2{color:#333;margin-bottom:20px;}
+.info{margin-bottom:5px;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;gap:5px;}
+.balance{font-size:22px;font-weight:600;color:#6C63FF;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn{display:block;width:100%;padding:12px;margin:10px 0;border-radius:8px;border:none;background:#6C63FF;color:#fff;font-size:16px;cursor:pointer;transition:all 0.3s;}
+.btn:hover{background:#5950d4;transform:scale(1.03);}
+.logout{background:#FF4C4C;}
+.logout:hover{background:#d63f3f;}
+.package-buttons button{width:100%;margin:8px 0;display:flex;align-items:center;justify-content:space-between;}
+.package-buttons .icon{font-size:20px;margin-right:8px;}
+.progress-container{background:#eee;border-radius:8px;overflow:hidden;margin:15px 0;height:20px;width:100%;}
+.progress-bar{height:100%;width:0;background:#6C63FF;text-align:center;color:white;font-size:12px;line-height:20px;border-radius:8px;transition:width 1s ease-in-out;}
+.deposit,.withdraw{margin-top:20px;text-align:left;border-top:1px solid #ddd;padding-top:20px;}
+.deposit h3,.withdraw h3{color:#333;margin-bottom:10px;text-align:center;}
+.deposit p,.withdraw p{font-size:14px;margin:5px 0;}
+.deposit input[type="file"],.withdraw input,.withdraw select{margin-top:10px;width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;}
+.deposit button,.withdraw button{margin-top:10px;}
+.history-table{width:100%;border-collapse:collapse;margin-top:10px;}
+.history-table th,.history-table td{border:1px solid #ddd;padding:8px;text-align:center;}
+.history-table th{background:#6C63FF;color:white;}
+img{max-width:80px;border-radius:6px;}
+</style>
 </head>
 <body>
 
 <div class="dashboard">
-  <h2>Welcome!</h2>
-  <div class="info"><span class="material-icons">account_circle</span>Email: <span id="userEmail">Loading...</span></div>
-  <div class="balance"><span class="material-icons">account_balance_wallet</span>$<span id="balance">0</span></div>
+<h2>Welcome!</h2>
+<div class="info"><span class="material-icons">account_circle</span>Email: <span id="userEmail">Loading...</span></div>
+<div class="balance"><span class="material-icons">account_balance_wallet</span>$<span id="balance">0</span></div>
 
-  <div class="package-buttons">
-    <button class="btn" onclick="buyPackage(50,5)"><span class="icon material-icons">local_offer</span>$50 Package <span>Daily $5</span></button>
-    <button class="btn" onclick="buyPackage(100,12)"><span class="icon material-icons">local_offer</span>$100 Package <span>Daily $12</span></button>
-    <button class="btn" onclick="buyPackage(200,25)"><span class="icon material-icons">local_offer</span>$200 Package <span>Daily $25</span></button>
-  </div>
+<div class="package-buttons">
+<button class="btn" onclick="buyPackage(50,1)"><span class="icon material-icons">local_offer</span>$50 Package <span>Daily $5</span></button>
+<button class="btn" onclick="buyPackage(100,2)"><span class="icon material-icons">local_offer</span>$100 Package <span>Daily $12</span></button>
+<button class="btn" onclick="buyPackage(200,5)"><span class="icon material-icons">local_offer</span>$200 Package <span>Daily $25</span></button>
+</div>
 
-  <button class="btn" onclick="claimDaily()">Claim Daily Earning</button>
+<button class="btn" onclick="claimDaily()">Claim Daily Earning</button>
+<div class="progress-container"><div class="progress-bar" id="dailyProgress">0%</div></div>
 
-  <div class="progress-container"><div class="progress-bar" id="dailyProgress">0%</div></div>
+<!-- Deposit Section -->
+<div class="deposit">
+<h3>Deposit Funds</h3>
+<p>JazzCash: <strong>03007927545 (Umair Ashraf)</strong></p>
+<p>Easypaisa: <strong>0311-XXXXXXX</strong></p>
+<p>Upload Screenshot after payment:</p>
+<input type="file" id="depositScreenshot" accept="image/*">
+<button class="btn" onclick="uploadDeposit()">Upload Screenshot</button>
 
-  <div class="deposit">
-    <h3>Deposit Funds</h3>
-    <p>JazzCash: <strong>03007927545 (Umair Ashraf)</strong></p>
-    <p>Easypaisa: <strong>0311-XXXXXXX</strong></p>
-    <p>Upload Screenshot after payment:</p>
-    <input type="file" id="depositScreenshot" accept="image/*">
-    <button class="btn" onclick="uploadDeposit()">Upload Screenshot</button>
-  </div>
+<h4>Deposit History</h4>
+<table class="history-table" id="depositHistory">
+<tr><th>Amount</th><th>Date</th></tr>
+<tr><td colspan="2">Loading...</td></tr>
+</table>
+</div>
 
-  <button class="btn logout" onclick="logout()">Logout</button>
+<!-- Withdrawal Section -->
+<div class="withdraw">
+<h3>Request Withdrawal</h3>
+<select id="withdrawMethod">
+<option value="JazzCash">JazzCash</option>
+<option value="Easypaisa">Easypaisa</option>
+<option value="Bank">Bank Transfer</option>
+</select>
+<input type="text" id="withdrawAccount" placeholder="Enter account number/details">
+<input type="number" id="withdrawAmount" placeholder="Amount to withdraw">
+<button class="btn" onclick="requestWithdrawal()">Submit Request</button>
+
+<h4>Withdrawal History</h4>
+<table class="history-table" id="withdrawHistory">
+<tr><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+<tr><td colspan="5">Loading...</td></tr>
+</table>
+</div>
+
+<button class="btn logout" onclick="logout()">Logout</button>
 </div>
 
 <script src="app.js?v=1"></script>
 <script>
 const progressBar=document.getElementById('dailyProgress');
+const depositHistory=document.getElementById('depositHistory');
+const withdrawHistory=document.getElementById('withdrawHistory');
 
 firebase.auth().onAuthStateChanged(function(user){
-  if(user){
-    document.getElementById('userEmail').textContent=user.email;
-    firebase.database().ref('users/'+user.uid).on('value',function(snapshot){
-      const data=snapshot.val()||{};
-      document.getElementById('balance').textContent=data.balance||0;
-      const lastClaim=data.lastClaim||0;
-      const now=Date.now();
-      const percent=Math.min(Math.floor((now-lastClaim)/86400000*100),100);
-      progressBar.style.width=percent+'%';
-      progressBar.textContent=percent+'%';
-    });
-  }else{
-    window.location.href="login.html";
-  }
+if(!user){window.location.href="login.html";return;}
+document.getElementById('userEmail').textContent=user.email;
+
+// Load user balance and daily progress
+firebase.database().ref('users/'+user.uid).on('value',function(snapshot){
+const data=snapshot.val()||{};
+document.getElementById('balance').textContent=data.balance||0;
+const lastClaim=data.lastClaim||0;
+const now=Date.now();
+const percent=Math.min(Math.floor((now-lastClaim)/86400000*100),100);
+progressBar.style.width=percent+'%';
+progressBar.textContent=percent+'%';
 });
 
-setInterval(()=>{
-  firebase.auth().onAuthStateChanged(function(user){
-    if(user){
-      firebase.database().ref('users/'+user.uid).once('value').then(snap=>{
-        const data=snap.val()||{};
-        const lastClaim=data.lastClaim||0;
-        const now=Date.now();
-        const percent=Math.min(Math.floor((now-lastClaim)/86400000*100),100);
-        progressBar.style.width=percent+'%';
-        progressBar.textContent=percent+'%';
-      });
-    }
-  });
-},5000);
+// Load deposit history (verified only)
+firebase.database().ref('deposits/'+user.uid).on('value',function(snap){
+const data=snap.val()||{};
+depositHistory.innerHTML='<tr><th>Amount</th><th>Date</th></tr>';
+if(Object.keys(data).length===0){depositHistory.innerHTML+='<tr><td colspan="2">No deposits yet</td></tr>';}
+else{Object.keys(data).forEach(key=>{
+if(data[key].verified){
+const date=new Date(data[key].timestamp).toLocaleString();
+depositHistory.innerHTML+='<tr><td>$'+data[key].amount+'</td><td>'+date+'</td></tr>';
+}}}
+});
+
+// Load withdrawal history
+firebase.database().ref('withdrawals/'+user.uid).on('value',function(snap){
+const data=snap.val()||{};
+withdrawHistory.innerHTML='<tr><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Date</th></tr>';
+if(Object.keys(data).length===0){withdrawHistory.innerHTML+='<tr><td colspan="5">No withdrawals yet</td></tr>';}
+else{Object.keys(data).forEach(key=>{
+const w=data[key];
+const date=new Date(w.timestamp).toLocaleString();
+withdrawHistory.innerHTML+='<tr><td>'+w.method+'</td><td>'+w.account+'</td><td>$'+w.amount+'</td><td>'+(w.status||'Pending')+'</td><td>'+date+'</td></tr>';
+}});
+
+});
 
 function uploadDeposit(){
-  const user=firebase.auth().currentUser;
-  if(!user)return alert("Login required");
-  const file=document.getElementById('depositScreenshot').files[0];
-  if(!file)return alert("Please select a file");
-  const storageRef=firebase.storage().ref('deposits/'+user.uid+'/'+Date.now()+'-'+file.name);
-  const uploadTask=storageRef.put(file);
-  uploadTask.on('state_changed',null,(error)=>alert("Upload failed: "+error.message),()=>{
-    uploadTask.snapshot.ref.getDownloadURL().then(url=>{
-      firebase.database().ref('deposits/'+user.uid).push({screenshot:url,timestamp:Date.now()});
-      alert("Screenshot uploaded successfully! Admin will verify your deposit.");
-      document.getElementById('depositScreenshot').value='';
-    });
-  });
+const user=firebase.auth().currentUser;
+if(!user)return alert("Login required");
+const file=document.getElementById('depositScreenshot').files[0];
+if(!file)return alert("Please select a file");
+const storageRef=firebase.storage().ref('deposits/'+user.uid+'/'+Date.now()+'-'+file.name);
+const uploadTask=storageRef.put(file);
+uploadTask.on('state_changed',null,(err)=>alert(err.message),()=>{
+uploadTask.snapshot.ref.getDownloadURL().then(url=>{
+firebase.database().ref('deposits/'+user.uid).push({screenshot:url,timestamp:Date.now()});
+alert("Screenshot uploaded! Admin will verify.");
+document.getElementById('depositScreenshot').value='';
 });
-</script>
+});
+}
 
+function requestWithdrawal(){
+const user=firebase.auth().currentUser;
+if(!user)return alert("Login required");
+const method=document.getElementById('withdrawMethod').value;
+const account=document.getElementById('withdrawAccount').value.trim();
+const amount=parseFloat(document.getElementById('withdrawAmount').value);
+if(!account||isNaN(amount)||amount<=0)return alert("Enter valid details");
+firebase.database().ref('users/'+user.uid).once('value').then(snap=>{
+const balance=snap.val()?.balance||0;
+if(amount>balance)return alert("Insufficient balance");
+firebase.database().ref('users/'+user.uid).update({balance:balance-amount});
+firebase.database().ref('withdrawals/'+user.uid).push({method,account,amount,status:'Pending',timestamp:Date.now()});
+alert("Withdrawal requested!");
+document.getElementById('withdrawAccount').value='';
+document.getElementById('withdrawAmount').value='';
+});
+}
+
+function logout(){firebase.auth().signOut().then(()=>window.location.href='login.html');}
+</script>
 </body>
 </html>
