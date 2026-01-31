@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><title>Signup</title></head>
+<head>
+  <title>Signup</title>
+</head>
 <body>
+
 <h2>Signup</h2>
+
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <input id="referral" placeholder="Referral Code (optional)">
-<button onclick="signup()">Create Account</button>
 
+<!-- 🔥 function name FIXED -->
+<button onclick="signUp()">Create Account</button>
+
+<!-- Firebase scripts (CORRECT) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script src="app.js"></script>
+
 </body>
 </html>
