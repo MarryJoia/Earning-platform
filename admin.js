@@ -1,3 +1,6 @@
+// ------------------------
+// Firebase Initialization
+// ------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
   authDomain: "earning-platform-a267f.firebaseapp.com",
@@ -12,103 +15,120 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// Load Users
+// ------------------------
+// ADMIN LOGIN
+// ------------------------
+function adminLogin(){
+  const email=document.getElementById('adminEmail').value;
+  const password=document.getElementById('adminPassword').value;
+  auth.signInWithEmailAndPassword(email,password)
+  .then(()=>window.location.href='admin.html')
+  .catch(e=>alert(e.message));
+}
+
+// ------------------------
+// ADMIN DASHBOARD
+// ------------------------
+if(document.getElementById('usersTable')){
+  auth.onAuthStateChanged(user=>{
+    if(!user) window.location.href='admin-login.html';
+    loadUsers();
+    loadDeposits();
+    loadWithdraws();
+  });
+}
+
 function loadUsers(){
-  const tbody = document.querySelector('#usersTable tbody');
-  tbody.innerHTML='';
   db.ref('users').once('value').then(snap=>{
-    snap.forEach(uSnap=>{
-      const u = uSnap.val();
+    const tbody=document.querySelector('#usersTable tbody');
+    tbody.innerHTML='';
+    snap.forEach(u=>{
+      const data=u.val();
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${u.email||uSnap.key}</td>
-                    <td>${(u.totalBalance||0).toFixed(2)}</td>
-                    <td>${(u.earnedIncome||0).toFixed(2)}</td>
-                    <td>${(u.referralIncome||0).toFixed(2)}</td>
-                    <td>${u.package||'-'}</td>`;
+      tr.innerHTML=`<td>${data.email}</td>
+                     <td>$${(data.totalBalance||0).toFixed(2)}</td>
+                     <td>$${(data.earnedIncome||0).toFixed(2)}</td>
+                     <td>$${(data.referralIncome||0).toFixed(2)}</td>
+                     <td>${data.package||'---'}</td>`;
       tbody.appendChild(tr);
     });
   });
 }
 
-// Load Deposits
 function loadDeposits(){
-  const tbody = document.querySelector('#depositTable tbody');
-  tbody.innerHTML='';
-  db.ref('deposits').once('value').then(users=>{
-    users.forEach(userSnap=>{
-      const uid=userSnap.key;
-      const deposits=userSnap.val();
-      for(let dKey in deposits){
-        const d=deposits[dKey];
-        if(d.status==='Pending'){
-          db.ref('users/'+uid+'/email').once('value').then(emailSnap=>{
-            const email=emailSnap.val()||uid;
-            const tr=document.createElement('tr');
-            tr.innerHTML=`<td>${email}</td>
-                          <td>${d.amountUSD.toFixed(2)}</td>
-                          <td>${d.amountPKR}</td>
-                          <td><a href="${d.screenshot}" target="_blank">View</a></td>
+  db.ref('deposits').once('value').then(snap=>{
+    const tbody=document.querySelector('#depositTable tbody');
+    tbody.innerHTML='';
+    snap.forEach(u=>{
+      const uid=u.key;
+      const userRef=db.ref('users/'+uid);
+      u.forEach(d=>{
+        const data=d.val();
+        if(data.status!=='Pending') return;
+        userRef.once('value').then(uSnap=>{
+          const email=uSnap.val().email;
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${email}</td>
+                          <td>$${data.amountUSD.toFixed(2)}</td>
+                          <td>PKR ${data.amountPKR}</td>
+                          <td><a href="${data.screenshot}" target="_blank">View</a></td>
                           <td>
-                            <button onclick="approveDeposit('${uid}','${dKey}',${d.amountUSD})">Approve</button>
-                            <button onclick="rejectDeposit('${uid}','${dKey}')">Reject</button>
+                            <button onclick="approveDeposit('${uid}','${d.key}',${data.amountUSD})">Approve</button>
                           </td>`;
-            tbody.appendChild(tr);
-          });
-        }
-      }
+          tbody.appendChild(tr);
+        });
+      });
     });
   });
 }
 
-function approveDeposit(uid,dKey,amount){
-  db.ref('deposits/'+uid+'/'+dKey).update({status:'Approved'});
-  db.ref('users/'+uid).once('value').then(snap=>{
-    const total=snap.val().totalBalance||0;
-    db.ref('users/'+uid).update({totalBalance:total+amount});
-    loadUsers(); loadDeposits();
-  });
+function approveDeposit(uid,key,usd){
+  if(confirm('Approve this deposit?')){
+    db.ref(`deposits/${uid}/${key}`).update({status:'Approved'});
+    db.ref(`users/${uid}`).once('value').then(snap=>{
+      const totalBalance=snap.val().totalBalance||0;
+      db.ref(`users/${uid}`).update({totalBalance:totalBalance+usd});
+      alert('Deposit approved!');
+      loadDeposits();
+      loadUsers();
+    });
+  }
 }
 
-function rejectDeposit(uid,dKey){
-  db.ref('deposits/'+uid+'/'+dKey).update({status:'Rejected'});
-  loadDeposits();
-}
-
-// Load Withdraws
 function loadWithdraws(){
-  const tbody=document.querySelector('#withdrawTable tbody');
-  tbody.innerHTML='';
-  db.ref('withdrawals').once('value').then(users=>{
-    users.forEach(userSnap=>{
-      const uid=userSnap.key;
-      const withdraws=userSnap.val();
-      for(let wKey in withdraws){
-        const w=withdraws[wKey];
-        if(w.status==='Pending'){
-          db.ref('users/'+uid+'/email').once('value').then(emailSnap=>{
-            const email=emailSnap.val()||uid;
-            const tr=document.createElement('tr');
-            tr.innerHTML=`<td>${email}</td>
-                          <td>${w.amount}</td>
-                          <td>${w.method}</td>
-                          <td>${w.account}</td>
+  db.ref('withdrawals').once('value').then(snap=>{
+    const tbody=document.querySelector('#withdrawTable tbody');
+    tbody.innerHTML='';
+    snap.forEach(u=>{
+      const uid=u.key;
+      const userRef=db.ref('users/'+uid);
+      u.forEach(w=>{
+        const data=w.val();
+        if(data.status!=='Pending') return;
+        userRef.once('value').then(uSnap=>{
+          const email=uSnap.val().email;
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${email}</td>
+                          <td>$${data.amount}</td>
+                          <td>${data.method}</td>
+                          <td>${data.account}</td>
                           <td>
-                            <button onclick="approveWithdraw('${uid}','${wKey}')">Approve</button>
-                            <button onclick="rejectWithdraw('${uid}','${wKey}')">Reject</button>
+                            <button onclick="approveWithdraw('${uid}','${w.key}')">Approve</button>
                           </td>`;
-            tbody.appendChild(tr);
-          });
-        }
-      }
+          tbody.appendChild(tr);
+        });
+      });
     });
   });
 }
 
-function approveWithdraw(uid,wKey){ db.ref('withdrawals/'+uid+'/'+wKey).update({status:'Approved'}); loadWithdraws(); }
-function rejectWithdraw(uid,wKey){ db.ref('withdrawals/'+uid+'/'+wKey).update({status:'Rejected'}); loadWithdraws(); }
-function logoutAdmin(){ auth.signOut().then(()=>window.location.href='admin-login.html'); }
+function approveWithdraw(uid,key){
+  if(confirm('Approve this withdrawal?')){
+    db.ref(`withdrawals/${uid}/${key}`).update({status:'Approved'});
+    alert('Withdraw approved!');
+    loadWithdraws();
+    loadUsers();
+  }
+}
 
-// Init Admin
-loadUsers();
-loadDeposits();
-loadWithdraws();
+function logoutAdmin(){ auth.signOut().then(()=>window.location.href='admin-login.html'); }
