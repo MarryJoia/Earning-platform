@@ -1,38 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="app.js"></script>
-<style>
-body{font-family:Arial;background:#f2f2f2;padding:20px}
-.card{background:#fff;padding:15px;margin:10px;border-radius:8px}
-button{padding:10px;margin:5px}
-</style>
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
+<div class="dashboard-container" id="dashboard-container">
+  <h1>Dashboard</h1>
+  <div class="balance-cards">
+    <div class="card"><h3>Total Balance</h3><p>$<span id="totalBalance">0</span></p></div>
+    <div class="card"><h3>Earned Income</h3><p>$<span id="earnedIncome">0</span></p></div>
+    <div class="card"><h3>Referral Income</h3><p>$<span id="referralIncome">0</span></p></div>
+    <div class="card"><h3>My Referral Code</h3><p id="myReferralCode">---</p><button onclick="copyReferralLink()">Copy Link</button></div>
+  </div>
 
-<h2>Dashboard</h2>
+  <div class="daily-income">
+    <h3>Daily Income</h3>
+    <p>$<span id="dailyIncome">0</span></p>
+    <p>Next Collection: <span id="nextCollect">Not Available</span></p>
+    <button id="collectBtn" disabled>Collect Income</button>
+  </div>
 
-<div class="card">Total Income: $<span id="totalIncome">0</span></div>
-<div class="card">Earned Income: $<span id="earnedIncome">0</span></div>
-<div class="card">Referral Rewards: $<span id="referralIncome">0</span></div>
+  <h3>Packages</h3>
+  <div class="packages">
+    <button onclick="buyPackage(50,1)">Buy $50 ($1/day)</button>
+    <button onclick="buyPackage(100,2)">Buy $100 ($2/day)</button>
+    <button onclick="buyPackage(200,4)">Buy $200 ($4/day)</button>
+    <button onclick="buyPackage(300,8)">Buy $300 ($8/day)</button>
+  </div>
 
-<h3>Investment Plans</h3>
-<button onclick="buyPlan(50,1)">$50 → $1/day</button>
-<button onclick="buyPlan(100,2)">$100 → $2/day</button>
-<button onclick="buyPlan(200,4)">$200 → $4/day</button>
-<button onclick="buyPlan(300,8)">$300 → $8/day</button>
-
-<button onclick="claimDaily()">Claim Daily Income</button>
-
-<h3>Deposit Converter</h3>
-<input id="pkrInput" oninput="convertPKR()" placeholder="Enter PKR">
-<p>USD: $<span id="usdOutput">0</span></p>
-
-<button onclick="logout()">Logout</button>
-
+  <div class="actions">
+    <a href="deposit.html"><button>Deposit Funds</button></a>
+    <a href="withdraw.html"><button>Withdraw Request</button></a>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+<script src="app.js"></script>
 </body>
 </html>
