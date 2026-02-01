@@ -1,25 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Login</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="app.js"></script>
-<style>
-body{background:#6C63FF;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh}
-.box{background:#fff;padding:30px;border-radius:10px;width:300px}
-input,button{width:100%;padding:10px;margin:8px 0}
-button{background:#6C63FF;color:#fff;border:none}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earning Platform</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body>
-<div class="box">
-<h2>Login</h2>
-<input id="emailEl" placeholder="Email">
-<input id="passwordEl" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<a href="signup.html">Create account</a>
+
+<div class="auth-container" id="auth-container">
+  <h1>Earning Platform</h1>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
 </div>
+
+<div class="dashboard-container" id="dashboard-container" style="display:none;">
+  <h2>Dashboard</h2>
+  <p><strong>Total Balance:</strong> $<span id="totalBalance">0</span></p>
+  <p><strong>Earned Income:</strong> $<span id="earnedIncome">0</span></p>
+  <p><strong>Referral Income:</strong> $<span id="referralIncome">0</span></p>
+  <p><strong>Daily Income:</strong> $<span id="dailyIncome">0</span></p>
+  <p><strong>Next Collection:</strong> <span id="nextCollect">Not available</span></p>
+  <button id="collectBtn" onclick="collectIncome()" disabled>Collect Daily Income</button>
+
+  <h3>Packages</h3>
+  <button onclick="buyPackage('50$', 1)">Buy $50 Package ($1/day)</button>
+  <button onclick="buyPackage('100$', 2)">Buy $100 Package ($2/day)</button>
+  <button onclick="buyPackage('200$', 4)">Buy $200 Package ($4/day)</button>
+  <button onclick="buyPackage('300$', 8)">Buy $300 Package ($8/day)</button>
+
+  <h3>Deposit</h3>
+  <button onclick="showDepositPage()">Go to Deposit Page</button>
+  <h3>Withdraw</h3>
+  <button onclick="showWithdrawPage()">Request Withdraw</button>
+
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="deposit-container" id="deposit-container" style="display:none;">
+  <h2>Deposit Funds</h2>
+  <p><strong>JazzCash Account:</strong> 03007927545 Umair Ashraf</p>
+  <input type="number" id="depositAmount" placeholder="Amount">
+  <input type="file" id="depositScreenshot">
+  <button onclick="submitDeposit()">Submit Deposit</button>
+  <h3>Deposit History</h3>
+  <ul id="depositHistory"></ul>
+  <button onclick="backToDashboard()">Back</button>
+</div>
+
+<div class="withdraw-container" id="withdraw-container" style="display:none;">
+  <h2>Withdraw Request</h2>
+  <input type="number" id="withdrawAmount" placeholder="Amount">
+  <select id="withdrawMethod">
+    <option value="JazzCash">JazzCash</option>
+    <option value="Easypaisa">Easypaisa</option>
+    <option value="BankTransfer">Bank Transfer</option>
+  </select>
+  <input type="text" id="withdrawAccount" placeholder="Account Number / IBAN">
+  <button onclick="submitWithdraw()">Submit Withdraw Request</button>
+  <h3>Withdraw History</h3>
+  <ul id="withdrawHistory"></ul>
+  <button onclick="backToDashboard()">Back</button>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
