@@ -1,19 +1,29 @@
 <!DOCTYPE html>
-<html>
-<head><title>Withdraw</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw Request</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
 <body>
-<h2>Withdraw Request</h2>
-<select id="method">
-<option>JazzCash</option>
-<option>Easypaisa</option>
-</select>
-<input id="number" placeholder="Account Number">
-<input id="amount" type="number" placeholder="Amount">
-<button onclick="withdraw()">Submit</button>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<div class="withdraw-container">
+  <h1>Withdraw Request</h1>
+  <input type="number" id="withdrawAmount" placeholder="Amount USD">
+  <select id="withdrawMethod">
+    <option value="JazzCash">JazzCash</option>
+    <option value="Easypaisa">Easypaisa</option>
+    <option value="BankTransfer">Bank Transfer</option>
+  </select>
+  <input type="text" id="withdrawAccount" placeholder="Account / IBAN">
+  <button id="withdrawBtn">Submit Withdraw</button>
+  <h3>Withdraw History</h3>
+  <ul id="withdrawHistory"></ul>
+  <a href="dashboard.html"><button>Back</button></a>
+</div>
 <script src="app.js"></script>
 </body>
 </html>
