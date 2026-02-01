@@ -19,73 +19,62 @@ const PKR_TO_USD = 300;
 let countdownInterval;
 
 // ------------------------
-// AUTHENTICATION
+// SIGNUP / LOGIN
 // ------------------------
-function signup(){
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const referralCode = document.getElementById('referralCode')?.value.trim();
+document.getElementById('signupBtn')?.addEventListener('click', ()=>{
+  const email=document.getElementById('email').value;
+  const password=document.getElementById('password').value;
+  const referralCode=document.getElementById('referralCode')?.value.trim();
+  if(!email||!password){ alert('Enter email & password'); return; }
   auth.createUserWithEmailAndPassword(email,password)
   .then(user=>{
-    const uid = user.user.uid;
-    const myReferralCode = uid.substring(0,6).toUpperCase();
-    db.ref('users/'+uid).set({
-      email,
-      totalBalance:0,
-      earnedIncome:0,
-      referralIncome:0,
-      package:null,
-      dailyIncome:0,
-      lastCollected:0,
-      myReferralCode
-    });
+    const uid=user.user.uid;
+    const myReferralCode=uid.substring(0,6).toUpperCase();
+    db.ref('users/'+uid).set({email,totalBalance:0,earnedIncome:0,referralIncome:0,package:null,dailyIncome:0,lastCollected:0,myReferralCode});
     if(referralCode){
-      db.ref('users').orderByChild('myReferralCode').equalTo(referralCode).once('value')
-      .then(snap=>{
+      db.ref('users').orderByChild('myReferralCode').equalTo(referralCode).once('value').then(snap=>{
         snap.forEach(refUser=>{
-          const refData = refUser.val();
-          const refUID = refUser.key;
-          const bonus = 1;
-          db.ref('users/'+refUID).update({
-            referralIncome:(refData.referralIncome||0)+bonus,
-            totalBalance:(refData.totalBalance||0)+bonus
-          });
+          const refData=refUser.val();
+          const refUID=refUser.key;
+          const bonus=1;
+          db.ref('users/'+refUID).update({referralIncome:(refData.referralIncome||0)+bonus,totalBalance:(refData.totalBalance||0)+bonus});
         });
       });
     }
-    alert('Signup successful! Your referral code: '+myReferralCode);
+    alert('Signup successful! Referral code: '+myReferralCode);
     window.location.href='dashboard.html';
   }).catch(e=>alert(e.message));
-}
+});
 
-function login(){
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+document.getElementById('loginBtn')?.addEventListener('click', ()=>{
+  const email=document.getElementById('email').value;
+  const password=document.getElementById('password').value;
+  if(!email||!password){ alert('Enter email & password'); return; }
   auth.signInWithEmailAndPassword(email,password)
   .then(()=>window.location.href='dashboard.html')
   .catch(e=>alert(e.message));
-}
+});
 
 function logout(){ auth.signOut().then(()=>window.location.href='index.html'); }
 
 // ------------------------
-// DASHBOARD FUNCTIONS
+// DASHBOARD
 // ------------------------
 function loadUserData(){
-  const uid = auth.currentUser.uid;
+  const uid=auth.currentUser.uid;
   db.ref('users/'+uid).on('value',snap=>{
-    const data = snap.val();
+    const data=snap.val();
     document.getElementById('totalBalance')?.innerText=data.totalBalance.toFixed(2);
     document.getElementById('earnedIncome')?.innerText=data.earnedIncome.toFixed(2);
     document.getElementById('referralIncome')?.innerText=data.referralIncome.toFixed(2);
     document.getElementById('dailyIncome')?.innerText=data.dailyIncome.toFixed(2);
-    document.getElementById('myReferralCode')?.innerText=data.myReferralCode || '---';
-    if(!data.package){ document.getElementById('collectBtn')?.setAttribute('disabled','true'); document.getElementById('nextCollect')?.innerText='No package purchased'; }
+    document.getElementById('myReferralCode')?.innerText=data.myReferralCode||'---';
+    if(!data.package){ document.getElementById('collectBtn')?.setAttribute('disabled','true'); document.getElementById('nextCollect')?.innerText='No package'; }
     else{
-      const lastCollected = data.lastCollected||0;
-      const now = Date.now();
-      const nextAvailable = lastCollected + 24*60*60*1000;
-      const remaining = nextAvailable - now;
+      const lastCollected=data.lastCollected||0;
+      const now=Date.now();
+      const nextAvailable=lastCollected+24*60*60*1000;
+      const remaining=nextAvailable-now;
       if(remaining<=0){ document.getElementById('collectBtn')?.removeAttribute('disabled'); document.getElementById('nextCollect')?.innerText='Now Available'; }
       else{ document.getElementById('collectBtn')?.setAttribute('disabled','true'); startCountdown(remaining); }
     }
@@ -107,17 +96,17 @@ function startCountdown(ms){
 }
 
 document.getElementById('collectBtn')?.addEventListener('click', ()=>{
-  const uid = auth.currentUser.uid;
+  const uid=auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
-    const data = snap.val();
-    const now = Date.now();
+    const data=snap.val();
+    const now=Date.now();
     if(now-(data.lastCollected||0)>=24*60*60*1000){
-      const newTotal = data.totalBalance + data.dailyIncome;
-      const newEarned = data.earnedIncome + data.dailyIncome;
-      db.ref('users/'+uid).update({ totalBalance:newTotal, earnedIncome:newEarned, lastCollected:now });
-      alert(`You collected $${data.dailyIncome} today!`);
+      const newTotal=data.totalBalance+data.dailyIncome;
+      const newEarned=data.earnedIncome+data.dailyIncome;
+      db.ref('users/'+uid).update({totalBalance:newTotal,earnedIncome:newEarned,lastCollected:now});
+      alert(`Collected $${data.dailyIncome} today!`);
       loadUserData();
-    } else alert('Daily income not yet available');
+    }else alert('Daily income not yet available');
   });
 });
 
@@ -125,11 +114,11 @@ document.getElementById('collectBtn')?.addEventListener('click', ()=>{
 // PACKAGES
 // ------------------------
 function buyPackage(price,dailyIncome){
-  const uid = auth.currentUser.uid;
+  const uid=auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
-    const balance = snap.val().totalBalance||0;
-    if(balance<price) return alert('Insufficient balance. Deposit first!');
-    db.ref('users/'+uid).update({ package:`$${price}`, dailyIncome:dailyIncome, totalBalance:balance-price });
+    const balance=snap.val().totalBalance||0;
+    if(balance<price) return alert('Insufficient balance!');
+    db.ref('users/'+uid).update({package:`$${price}`,dailyIncome,totalBalance:balance-price});
     alert(`Package $${price} purchased! Daily income $${dailyIncome}`);
   });
 }
@@ -138,23 +127,23 @@ function buyPackage(price,dailyIncome){
 // REFERRAL
 // ------------------------
 function copyReferralLink(){
-  const uid = auth.currentUser.uid;
+  const uid=auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
-    const code = snap.val().myReferralCode;
-    const link = `${window.location.origin}?ref=${code}`;
+    const code=snap.val().myReferralCode;
+    const link=`${window.location.origin}?ref=${code}`;
     navigator.clipboard.writeText(link);
     alert('Referral link copied! Share: '+link);
   });
 }
 
 // ------------------------
-// DEPOSIT PAGE
+// DEPOSIT
 // ------------------------
 if(document.getElementById('depositAmountPKR')){
-  const amountInput = document.getElementById('depositAmountPKR');
-  const screenshotInput = document.getElementById('depositScreenshot');
-  const depositBtn = document.getElementById('depositBtn');
-  const depositHistory = document.getElementById('depositHistory');
+  const amountInput=document.getElementById('depositAmountPKR');
+  const screenshotInput=document.getElementById('depositScreenshot');
+  const depositBtn=document.getElementById('depositBtn');
+  const depositHistory=document.getElementById('depositHistory');
 
   amountInput.addEventListener('input',()=>{
     const val=parseFloat(amountInput.value)||0;
@@ -162,17 +151,16 @@ if(document.getElementById('depositAmountPKR')){
   });
 
   depositBtn.addEventListener('click', async ()=>{
-    const uid = auth.currentUser.uid;
-    const amountPKR = parseFloat(amountInput.value);
-    const file = screenshotInput.files[0];
-    if(!amountPKR) return alert('Enter deposit amount');
-    if(!file) return alert('Upload screenshot');
-    const amountUSD = amountPKR/PKR_TO_USD;
+    const uid=auth.currentUser.uid;
+    const amountPKR=parseFloat(amountInput.value);
+    const file=screenshotInput.files[0];
+    if(!amountPKR||!file) return alert('Enter amount and upload screenshot');
+    const amountUSD=amountPKR/PKR_TO_USD;
     try{
-      const storageRef = storage.ref(`deposits/${uid}/${Date.now()}`);
-      const snap = await storageRef.put(file);
-      const url = await snap.ref.getDownloadURL();
-      await db.ref(`deposits/${uid}`).push({ amountPKR, amountUSD, screenshot:url, timestamp:Date.now(), status:'Pending' });
+      const storageRef=storage.ref(`deposits/${uid}/${Date.now()}`);
+      const snap=await storageRef.put(file);
+      const url=await snap.ref.getDownloadURL();
+      await db.ref(`deposits/${uid}`).push({amountPKR,amountUSD,screenshot:url,timestamp:Date.now(),status:'Pending'});
       alert('Deposit submitted! Waiting admin approval.');
       loadDepositHistory();
       amountInput.value=''; screenshotInput.value='';
@@ -181,10 +169,10 @@ if(document.getElementById('depositAmountPKR')){
 
   function loadDepositHistory(){
     depositHistory.innerHTML='';
-    const uid = auth.currentUser.uid;
+    const uid=auth.currentUser.uid;
     db.ref('deposits/'+uid).once('value').then(snap=>{
       snap.forEach(c=>{
-        const d = c.val();
+        const d=c.val();
         const li=document.createElement('li');
         li.innerHTML=`PKR ${d.amountPKR} = $${d.amountUSD.toFixed(2)} - ${d.status} - <a href="${d.screenshot}" target="_blank">View</a>`;
         depositHistory.appendChild(li);
@@ -195,23 +183,23 @@ if(document.getElementById('depositAmountPKR')){
 }
 
 // ------------------------
-// WITHDRAW PAGE
+// WITHDRAW
 // ------------------------
 if(document.getElementById('withdrawBtn')){
-  const withdrawBtn = document.getElementById('withdrawBtn');
-  const withdrawHistory = document.getElementById('withdrawHistory');
+  const withdrawBtn=document.getElementById('withdrawBtn');
+  const withdrawHistory=document.getElementById('withdrawHistory');
 
   withdrawBtn.addEventListener('click', ()=>{
-    const uid = auth.currentUser.uid;
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const method = document.getElementById('withdrawMethod').value;
-    const account = document.getElementById('withdrawAccount').value;
-    if(!amount || !account) return alert('Enter amount and account');
+    const uid=auth.currentUser.uid;
+    const amount=parseFloat(document.getElementById('withdrawAmount').value);
+    const method=document.getElementById('withdrawMethod').value;
+    const account=document.getElementById('withdrawAccount').value;
+    if(!amount||!account) return alert('Enter amount and account');
     db.ref('users/'+uid).once('value').then(snap=>{
-      const balance = snap.val().totalBalance||0;
+      const balance=snap.val().totalBalance||0;
       if(amount>balance) return alert('Insufficient balance');
-      db.ref('withdrawals/'+uid).push({ amount, method, account, timestamp:Date.now(), status:'Pending' });
-      db.ref('users/'+uid).update({ totalBalance: balance-amount });
+      db.ref('withdrawals/'+uid).push({amount,method,account,timestamp:Date.now(),status:'Pending'});
+      db.ref('users/'+uid).update({totalBalance:balance-amount});
       alert('Withdraw request submitted!');
       loadWithdrawHistory();
     });
@@ -219,10 +207,10 @@ if(document.getElementById('withdrawBtn')){
 
   function loadWithdrawHistory(){
     withdrawHistory.innerHTML='';
-    const uid = auth.currentUser.uid;
+    const uid=auth.currentUser.uid;
     db.ref('withdrawals/'+uid).once('value').then(snap=>{
       snap.forEach(c=>{
-        const w = c.val();
+        const w=c.val();
         const li=document.createElement('li');
         li.innerText=`$${w.amount} - ${w.method} - ${w.status}`;
         withdrawHistory.appendChild(li);
