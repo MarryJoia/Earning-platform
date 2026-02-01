@@ -1,4 +1,6 @@
-// Firebase config
+// ------------------------
+// Firebase Initialization
+// ------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
   authDomain: "earning-platform-a267f.firebaseapp.com",
@@ -13,31 +15,30 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
-
 const PKR_TO_USD = 300;
 let countdownInterval;
 
-// --- AUTH ---
-function signup() {
+// ------------------------
+// AUTHENTICATION
+// ------------------------
+function signup(){
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const referralCode = document.getElementById('referralCode').value.trim();
-
+  const referralCode = document.getElementById('referralCode')?.value.trim();
   auth.createUserWithEmailAndPassword(email,password)
   .then(user=>{
     const uid = user.user.uid;
     const myReferralCode = uid.substring(0,6).toUpperCase();
     db.ref('users/'+uid).set({
+      email,
       totalBalance:0,
       earnedIncome:0,
       referralIncome:0,
       package:null,
       dailyIncome:0,
       lastCollected:0,
-      myReferralCode:myReferralCode
+      myReferralCode
     });
-
-    // Handle referral bonus
     if(referralCode){
       db.ref('users').orderByChild('myReferralCode').equalTo(referralCode).once('value')
       .then(snap=>{
@@ -52,9 +53,8 @@ function signup() {
         });
       });
     }
-
     alert('Signup successful! Your referral code: '+myReferralCode);
-    showDashboard();
+    window.location.href='dashboard.html';
   }).catch(e=>alert(e.message));
 }
 
@@ -62,47 +62,40 @@ function login(){
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   auth.signInWithEmailAndPassword(email,password)
-  .then(()=>showDashboard())
+  .then(()=>window.location.href='dashboard.html')
   .catch(e=>alert(e.message));
 }
 
-function logout(){
-  auth.signOut().then(()=>{
-    document.getElementById('dashboard-container').style.display='none';
-    document.getElementById('auth-container').style.display='block';
-  });
-}
+function logout(){ auth.signOut().then(()=>window.location.href='index.html'); }
 
-// --- DASHBOARD ---
-function showDashboard(){
-  document.getElementById('auth-container').style.display='none';
-  document.getElementById('dashboard-container').style.display='block';
-  loadUserData();
-}
-
+// ------------------------
+// DASHBOARD FUNCTIONS
+// ------------------------
 function loadUserData(){
   const uid = auth.currentUser.uid;
   db.ref('users/'+uid).on('value',snap=>{
     const data = snap.val();
-    document.getElementById('totalBalance').innerText=data.totalBalance.toFixed(2);
-    document.getElementById('earnedIncome').innerText=data.earnedIncome.toFixed(2);
-    document.getElementById('referralIncome').innerText=data.referralIncome.toFixed(2);
-    document.getElementById('dailyIncome').innerText=data.dailyIncome.toFixed(2);
-    document.getElementById('myReferralCode').innerText=data.myReferralCode || '---';
-
-    const last = data.lastCollected ||0;
-    const now = Date.now();
-    const diff = 24*60*60*1000 - (now-last);
-    if(!data.package){ document.getElementById('collectBtn').disabled=true; document.getElementById('nextCollect').innerText='No package purchased'; }
-    else if(diff<=0){ document.getElementById('collectBtn').disabled=false; document.getElementById('nextCollect').innerText='Now Available'; }
-    else startCountdown(diff);
+    document.getElementById('totalBalance')?.innerText=data.totalBalance.toFixed(2);
+    document.getElementById('earnedIncome')?.innerText=data.earnedIncome.toFixed(2);
+    document.getElementById('referralIncome')?.innerText=data.referralIncome.toFixed(2);
+    document.getElementById('dailyIncome')?.innerText=data.dailyIncome.toFixed(2);
+    document.getElementById('myReferralCode')?.innerText=data.myReferralCode || '---';
+    if(!data.package){ document.getElementById('collectBtn')?.setAttribute('disabled','true'); document.getElementById('nextCollect')?.innerText='No package purchased'; }
+    else{
+      const lastCollected = data.lastCollected||0;
+      const now = Date.now();
+      const nextAvailable = lastCollected + 24*60*60*1000;
+      const remaining = nextAvailable - now;
+      if(remaining<=0){ document.getElementById('collectBtn')?.removeAttribute('disabled'); document.getElementById('nextCollect')?.innerText='Now Available'; }
+      else{ document.getElementById('collectBtn')?.setAttribute('disabled','true'); startCountdown(remaining); }
+    }
   });
 }
 
 function startCountdown(ms){
   clearInterval(countdownInterval);
   function update(){
-    if(ms<=0){ clearInterval(countdownInterval); document.getElementById('collectBtn').disabled=false; document.getElementById('nextCollect').innerText='Now Available'; return;}
+    if(ms<=0){ clearInterval(countdownInterval); document.getElementById('collectBtn')?.removeAttribute('disabled'); document.getElementById('nextCollect')?.innerText='Now Available'; return;}
     const h=Math.floor(ms/3600000);
     const m=Math.floor((ms%3600000)/60000);
     const s=Math.floor((ms%60000)/1000);
@@ -113,8 +106,7 @@ function startCountdown(ms){
   countdownInterval=setInterval(update,1000);
 }
 
-// --- COLLECT DAILY INCOME ---
-function collectIncome(){
+document.getElementById('collectBtn')?.addEventListener('click', ()=>{
   const uid = auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
     const data = snap.val();
@@ -124,117 +116,128 @@ function collectIncome(){
       const newEarned = data.earnedIncome + data.dailyIncome;
       db.ref('users/'+uid).update({ totalBalance:newTotal, earnedIncome:newEarned, lastCollected:now });
       alert(`You collected $${data.dailyIncome} today!`);
+      loadUserData();
     } else alert('Daily income not yet available');
   });
-}
+});
 
-// --- BUY PACKAGE ---
+// ------------------------
+// PACKAGES
+// ------------------------
 function buyPackage(price,dailyIncome){
   const uid = auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
     const balance = snap.val().totalBalance||0;
     if(balance<price) return alert('Insufficient balance. Deposit first!');
-    db.ref('users/'+uid).update({
-      package:`$${price}`,
-      dailyIncome:dailyIncome,
-      totalBalance:balance-price
-    });
+    db.ref('users/'+uid).update({ package:`$${price}`, dailyIncome:dailyIncome, totalBalance:balance-price });
     alert(`Package $${price} purchased! Daily income $${dailyIncome}`);
   });
 }
 
-// --- DEPOSIT ---
-document.getElementById('depositAmountPKR')?.addEventListener('input',()=>{
-  const val=parseFloat(document.getElementById('depositAmountPKR').value)||0;
-  document.getElementById('convertedUSD').innerText=(val/PKR_TO_USD).toFixed(2);
-});
-
-function showDepositPage(){ document.getElementById('dashboard-container').style.display='none'; document.getElementById('deposit-container').style.display='block'; loadDepositHistory(); }
-
-function submitDeposit(){
-  const uid = auth.currentUser.uid;
-  const amountPKR=parseFloat(document.getElementById('depositAmountPKR').value);
-  const amountUSD=amountPKR/PKR_TO_USD;
-  const file=document.getElementById('depositScreenshot').files[0];
-  if(!amountPKR || !file) return alert('Enter amount and upload screenshot');
-
-  const storageRef=storage.ref('deposits/'+uid+'/'+Date.now());
-  storageRef.put(file).then(snap=>{
-    snap.ref.getDownloadURL().then(url=>{
-      db.ref('deposits/'+uid).push({
-        amountUSD:amountUSD,
-        amountPKR:amountPKR,
-        screenshot:url,
-        timestamp:Date.now(),
-        status:'Approved'
-      });
-      db.ref('users/'+uid).once('value').then(snap=>{
-        const current=snap.val().totalBalance||0;
-        db.ref('users/'+uid).update({ totalBalance: current+amountUSD });
-      });
-      alert('Deposit successful!');
-      loadDepositHistory();
-    });
-  });
-}
-
-function loadDepositHistory(){
-  const uid=auth.currentUser.uid;
-  const list=document.getElementById('depositHistory');
-  list.innerHTML='';
-  db.ref('deposits/'+uid).once('value').then(snap=>{
-    snap.forEach(c=>{
-      const d=c.val();
-      const li=document.createElement('li');
-      li.innerHTML=`PKR ${d.amountPKR} = $${d.amountUSD.toFixed(2)} - ${d.status} - <a href="${d.screenshot}" target="_blank">View</a>`;
-      list.appendChild(li);
-    });
-  });
-}
-
-// --- WITHDRAW ---
-function showWithdrawPage(){ document.getElementById('dashboard-container').style.display='none'; document.getElementById('withdraw-container').style.display='block'; loadWithdrawHistory(); }
-
-function submitWithdraw(){
-  const uid=auth.currentUser.uid;
-  const amount=parseFloat(document.getElementById('withdrawAmount').value);
-  const method=document.getElementById('withdrawMethod').value;
-  const account=document.getElementById('withdrawAccount').value;
-  if(!amount || !account) return alert('Enter amount and account');
-
-  db.ref('users/'+uid).once('value').then(snap=>{
-    const balance=snap.val().totalBalance||0;
-    if(amount>balance) return alert('Insufficient balance');
-    db.ref('withdrawals/'+uid).push({ amount, method, account, timestamp:Date.now(), status:'Pending' });
-    db.ref('users/'+uid).update({ totalBalance: balance-amount });
-    alert('Withdraw request submitted!');
-    loadWithdrawHistory();
-  });
-}
-
-function loadWithdrawHistory(){
-  const uid=auth.currentUser.uid;
-  const list=document.getElementById('withdrawHistory');
-  list.innerHTML='';
-  db.ref('withdrawals/'+uid).once('value').then(snap=>{
-    snap.forEach(c=>{
-      const w=c.val();
-      const li=document.createElement('li');
-      li.innerText=`$${w.amount} - ${w.method} - ${w.status}`;
-      list.appendChild(li);
-    });
-  });
-}
-
-function backToDashboard(){ document.getElementById('deposit-container').style.display='none'; document.getElementById('withdraw-container').style.display='none'; document.getElementById('dashboard-container').style.display='block'; }
-
-// --- REFERRAL LINK COPY ---
+// ------------------------
+// REFERRAL
+// ------------------------
 function copyReferralLink(){
-  const uid=auth.currentUser.uid;
+  const uid = auth.currentUser.uid;
   db.ref('users/'+uid).once('value').then(snap=>{
-    const code=snap.val().myReferralCode;
-    const link=`${window.location.origin}?ref=${code}`;
+    const code = snap.val().myReferralCode;
+    const link = `${window.location.origin}?ref=${code}`;
     navigator.clipboard.writeText(link);
     alert('Referral link copied! Share: '+link);
+  });
+}
+
+// ------------------------
+// DEPOSIT PAGE
+// ------------------------
+if(document.getElementById('depositAmountPKR')){
+  const amountInput = document.getElementById('depositAmountPKR');
+  const screenshotInput = document.getElementById('depositScreenshot');
+  const depositBtn = document.getElementById('depositBtn');
+  const depositHistory = document.getElementById('depositHistory');
+
+  amountInput.addEventListener('input',()=>{
+    const val=parseFloat(amountInput.value)||0;
+    document.getElementById('convertedUSD').innerText=(val/PKR_TO_USD).toFixed(2);
+  });
+
+  depositBtn.addEventListener('click', async ()=>{
+    const uid = auth.currentUser.uid;
+    const amountPKR = parseFloat(amountInput.value);
+    const file = screenshotInput.files[0];
+    if(!amountPKR) return alert('Enter deposit amount');
+    if(!file) return alert('Upload screenshot');
+    const amountUSD = amountPKR/PKR_TO_USD;
+    try{
+      const storageRef = storage.ref(`deposits/${uid}/${Date.now()}`);
+      const snap = await storageRef.put(file);
+      const url = await snap.ref.getDownloadURL();
+      await db.ref(`deposits/${uid}`).push({ amountPKR, amountUSD, screenshot:url, timestamp:Date.now(), status:'Pending' });
+      alert('Deposit submitted! Waiting admin approval.');
+      loadDepositHistory();
+      amountInput.value=''; screenshotInput.value='';
+    }catch(e){ alert('Deposit failed: '+e.message);}
+  });
+
+  function loadDepositHistory(){
+    depositHistory.innerHTML='';
+    const uid = auth.currentUser.uid;
+    db.ref('deposits/'+uid).once('value').then(snap=>{
+      snap.forEach(c=>{
+        const d = c.val();
+        const li=document.createElement('li');
+        li.innerHTML=`PKR ${d.amountPKR} = $${d.amountUSD.toFixed(2)} - ${d.status} - <a href="${d.screenshot}" target="_blank">View</a>`;
+        depositHistory.appendChild(li);
+      });
+    });
+  }
+  loadDepositHistory();
+}
+
+// ------------------------
+// WITHDRAW PAGE
+// ------------------------
+if(document.getElementById('withdrawBtn')){
+  const withdrawBtn = document.getElementById('withdrawBtn');
+  const withdrawHistory = document.getElementById('withdrawHistory');
+
+  withdrawBtn.addEventListener('click', ()=>{
+    const uid = auth.currentUser.uid;
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const method = document.getElementById('withdrawMethod').value;
+    const account = document.getElementById('withdrawAccount').value;
+    if(!amount || !account) return alert('Enter amount and account');
+    db.ref('users/'+uid).once('value').then(snap=>{
+      const balance = snap.val().totalBalance||0;
+      if(amount>balance) return alert('Insufficient balance');
+      db.ref('withdrawals/'+uid).push({ amount, method, account, timestamp:Date.now(), status:'Pending' });
+      db.ref('users/'+uid).update({ totalBalance: balance-amount });
+      alert('Withdraw request submitted!');
+      loadWithdrawHistory();
+    });
+  });
+
+  function loadWithdrawHistory(){
+    withdrawHistory.innerHTML='';
+    const uid = auth.currentUser.uid;
+    db.ref('withdrawals/'+uid).once('value').then(snap=>{
+      snap.forEach(c=>{
+        const w = c.val();
+        const li=document.createElement('li');
+        li.innerText=`$${w.amount} - ${w.method} - ${w.status}`;
+        withdrawHistory.appendChild(li);
+      });
+    });
+  }
+  loadWithdrawHistory();
+}
+
+// ------------------------
+// INIT
+// ------------------------
+if(document.getElementById('dashboard-container')){
+  auth.onAuthStateChanged(user=>{
+    if(user) loadUserData();
+    else window.location.href='index.html';
   });
 }
