@@ -3,25 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deposit Funds</title>
+<title>Deposit - Earning Platform</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="app.js" defer></script>
 </head>
 <body>
 <div class="deposit-container">
-  <h1>Deposit Funds</h1>
-  <p><strong>JazzCash:</strong> 03007927545 Umair Ashraf</p>
-  <input type="number" id="depositAmountPKR" placeholder="Amount in PKR">
-  <p>Converted to USD: $<span id="convertedUSD">0</span></p>
-  <input type="file" id="depositScreenshot">
-  <button id="depositBtn">Submit Deposit</button>
-  <h3>Deposit History</h3>
-  <ul id="depositHistory"></ul>
-  <a href="dashboard.html"><button>Back</button></a>
+    <h1>Deposit Funds</h1>
+    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+
+    <div class="deposit-form">
+        <label>Amount in PKR:</label>
+        <input type="number" id="depositPKR" placeholder="e.g., 3000">
+        <p>Conversion: <span id="depositUSD">0</span> USD</p>
+        <label>Upload Screenshot:</label>
+        <input type="file" id="screenshotInput" accept="image/*">
+        <button id="depositBtn">Submit Deposit</button>
+    </div>
+
+    <h3>Deposit History</h3>
+    <table>
+        <thead>
+            <tr><th>Amount (USD)</th><th>Amount (PKR)</th><th>Status</th><th>Screenshot</th></tr>
+        </thead>
+        <tbody id="depositHistory">
+            <!-- Filled by JS -->
+        </tbody>
+    </table>
 </div>
-<script src="app.js"></script>
 </body>
 </html>
