@@ -3,111 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - Earning Platform</title>
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
 
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
-body{background:#f0f2f5;min-height:100vh;padding:30px;}
-.container{max-width:900px;margin:auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2);}
-h2{text-align:center;margin-bottom:20px;color:#333;}
-.account{background:#e0e0ff;padding:15px;border-radius:8px;margin-bottom:20px;text-align:center;font-weight:600;}
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-table th,table td{border:1px solid #ddd;padding:10px;text-align:center;}
-table th{background:#6C63FF;color:white;}
-img{max-width:100px;border-radius:6px;}
-.btn{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;transition:all 0.3s;}
-.verify{background:#4CAF50;color:white;}
-.verify:hover{background:#3e8e41;}
-.logout{background:#FF4C4C;color:white;float:right;margin-bottom:15px;}
-.logout:hover{background:#d63f3f;}
-input[type=number]{width:70px;}
-</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<div class="container">
-  <button class="btn logout" onclick="logout()">Logout</button>
-  <h2>Admin Panel - Deposit Verification</h2>
-  <div class="account">JazzCash Account: <strong>03007927545 (Umair Ashraf)</strong></div>
+<div class="admin-container">
+  <h1>Admin Dashboard</h1>
+  <h2>Users</h2>
+  <table border="1" width="100%" id="usersTable">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Total Balance</th>
+        <th>Earned Income</th>
+        <th>Referral Income</th>
+        <th>Package</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <table>
+  <h2>Pending Deposits</h2>
+  <table border="1" width="100%" id="depositTable">
     <thead>
       <tr>
         <th>User Email</th>
+        <th>Amount USD</th>
+        <th>Amount PKR</th>
         <th>Screenshot</th>
-        <th>Deposit Amount ($)</th>
-        <th>Timestamp</th>
-        <th>Action</th>
+        <th>Actions</th>
       </tr>
     </thead>
-    <tbody id="depositTable"><tr><td colspan="5">Loading deposits...</td></tr></tbody>
+    <tbody></tbody>
   </table>
+
+  <h2>Pending Withdraws</h2>
+  <table border="1" width="100%" id="withdrawTable">
+    <thead>
+      <tr>
+        <th>User Email</th>
+        <th>Amount USD</th>
+        <th>Method</th>
+        <th>Account</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="logoutAdmin()">Logout</button>
 </div>
 
-<script src="app.js?v=1"></script>
-<script>
-const depositTable=document.getElementById('depositTable');
-
-firebase.auth().onAuthStateChanged(function(user){
-  if(!user){alert("Admin login required!");window.location.href="login.html";}else{
-    firebase.database().ref('deposits').on('value',function(snapshot){
-      const data=snapshot.val()||{};
-      depositTable.innerHTML='';
-      let hasData=false;
-      Object.keys(data).forEach(uid=>{
-        Object.keys(data[uid]).forEach(depositId=>{
-          const dep=data[uid][depositId];
-          if(dep.verified)return;
-          hasData=true;
-          const timestamp=new Date(dep.timestamp).toLocaleString();
-          firebase.database().ref('users/'+uid).once('value').then(userSnap=>{
-            const email=userSnap.val()?.email||'Unknown';
-            const row=document.createElement('tr');
-            row.innerHTML=`
-              <td>${email}</td>
-              <td><a href="${dep.screenshot}" target="_blank"><img src="${dep.screenshot}" alt="screenshot"></a></td>
-              <td><input type="number" placeholder="Enter amount" id="amount_${uid}_${depositId}"></td>
-              <td>${timestamp}</td>
-              <td><button class="btn verify" onclick="verifyDeposit('${uid}','${depositId}',this)">Verify</button></td>
-            `;
-            depositTable.appendChild(row);
-          });
-        });
-      });
-      if(!hasData){depositTable.innerHTML='<tr><td colspan="5">No pending deposits</td></tr>';}
-    });
-  }
-});
-
-function verifyDeposit(uid,depositId,btn){
-  const amountInput=document.getElementById(`amount_${uid}_${depositId}`);
-  const amount=parseFloat(amountInput.value);
-  if(isNaN(amount)||amount<=0)return alert("Enter a valid deposit amount!");
-  firebase.database().ref('users/'+uid).once('value').then(snapshot=>{
-    const currentBalance=snapshot.val()?.balance||0;
-    const newBalance=currentBalance+amount;
-    firebase.database().ref('users/'+uid).update({balance:newBalance}).then(()=>{
-      firebase.database().ref('deposits/'+uid+'/'+depositId).update({verified:true,amount:amount});
-      btn.textContent="Verified"; btn.disabled=true; btn.style.background="#aaa"; amountInput.disabled=true;
-      alert(`Deposit of $${amount} added to user's balance!`);
-    });
-  });
-}
-
-function logout(){firebase.auth().signOut().then(()=>window.location.href="login.html");}
-</script>
-
+<script src="admin.js"></script>
 </body>
 </html>
