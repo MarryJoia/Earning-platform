@@ -1,45 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up - Earning Platform</title>
-
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
+<title>Signup</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="app.js?v=1"></script>
-
-<style>
-body{font-family:Arial,sans-serif;background:#00D4FF;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-.container{background:#fff;padding:30px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2);width:350px;text-align:center;}
-h2{margin-bottom:20px;color:#333;}
-input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:12px;margin:10px 0;border:none;border-radius:6px;background:#6C63FF;color:white;font-size:16px;cursor:pointer;}
-button:hover{background:#5950d4;}
-a{color:#6C63FF;text-decoration:none;}
-</style>
+<script src="app.js"></script>
 </head>
 <body>
-<div class="container">
-<h2>Sign Up</h2>
-<input type="email" id="email" placeholder="Email" required>
-<input type="password" id="password" placeholder="Password" required>
-<button onclick="signUp()">Sign Up</button>
-<p>Already have an account? <a href="login.html">Login</a></p>
+<div class="box">
+<h2>Signup</h2>
+<input id="emailEl" placeholder="Email">
+<input id="passwordEl" type="password" placeholder="Password">
+<button onclick="signUp()">Signup</button>
 </div>
-
-<script>
-firebase.auth().onAuthStateChanged(function(user){
-  if(user){
-    window.location.href="dashboard.html";
-  }
-});
-</script>
 </body>
 </html>
