@@ -3,47 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard</title>
+<title>Admin Panel</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="admin.js" defer></script>
 </head>
 <body>
 <div class="admin-container">
-  <h1>Admin Dashboard</h1>
-  <h2>Users</h2>
-  <table border="1" width="100%" id="usersTable">
-    <thead>
-      <tr>
-        <th>Email</th><th>Total Balance</th><th>Earned Income</th><th>Referral Income</th><th>Package</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <h1>Admin Panel</h1>
+    <button onclick="logoutAdmin()">Logout</button>
 
-  <h2>Pending Deposits</h2>
-  <table border="1" width="100%" id="depositTable">
-    <thead>
-      <tr>
-        <th>User Email</th><th>USD</th><th>PKR</th><th>Screenshot</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <h2>Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Total Balance</th>
+                <th>Earned Income</th>
+                <th>Referral Income</th>
+                <th>Package</th>
+            </tr>
+        </thead>
+        <tbody id="usersTable">
+            <!-- Filled by JS -->
+        </tbody>
+    </table>
 
-  <h2>Pending Withdraws</h2>
-  <table border="1" width="100%" id="withdrawTable">
-    <thead>
-      <tr>
-        <th>Email</th><th>Amount USD</th><th>Method</th><th>Account</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <h2>Deposit Requests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Amount (USD)</th>
+                <th>Amount (PKR)</th>
+                <th>Screenshot</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="depositTable">
+            <!-- Filled by JS -->
+        </tbody>
+    </table>
 
-  <button onclick="logoutAdmin()">Logout</button>
+    <h2>Withdraw Requests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Amount (USD)</th>
+                <th>Method</th>
+                <th>Account</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="withdrawTable">
+            <!-- Filled by JS -->
+        </tbody>
+    </table>
 </div>
-<script src="admin.js"></script>
 </body>
 </html>
