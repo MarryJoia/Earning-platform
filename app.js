@@ -1,85 +1,110 @@
-// Firebase Config
+// 🔥 Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
-  authDomain: "earning-platform-a267f.firebaseapp.com",
-  databaseURL: "https://earning-platform-a267f-default-rtdb.firebaseio.com",
-  projectId: "earning-platform-a267f",
-  storageBucket: "earning-platform-a267f.firebasestorage.app",
-  messagingSenderId: "785014377238",
-  appId: "1:785014377238:web:e693e96aacbe4b151c1e37"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Services
 const auth = firebase.auth();
-const database = firebase.database();
+const db = firebase.database();
 
-// ================= SIGNUP =================
-window.signUp = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+/* ================= AUTH ================= */
+
+function signUp() {
+  const email = emailEl.value;
+  const password = passwordEl.value;
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then((cred) => {
-      database.ref("users/" + cred.user.uid).set({
-        email: email,
-        balance: 0
+    .then(res => {
+      db.ref("users/" + res.user.uid).set({
+        email,
+        balance: 0,
+        earned: 0,
+        referral: 0,
+        plan: null,
+        dailyIncome: 0,
+        lastClaim: 0
       });
-      alert("Signup successful");
-      window.location.href = "dashboard.html";
+      location.href = "dashboard.html";
     })
-    .catch(err => alert(err.message));
-};
+    .catch(e => alert(e.message));
+}
 
-// ================= LOGIN =================
-window.login = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+function login() {
+  auth.signInWithEmailAndPassword(emailEl.value, passwordEl.value)
+    .then(() => location.href = "dashboard.html")
+    .catch(e => alert(e.message));
+}
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => window.location.href = "dashboard.html")
-    .catch(err => alert(err.message));
-};
+function logout() {
+  auth.signOut().then(() => location.href = "index.html");
+}
 
-// ================= BUY PACKAGE =================
-window.buyPackage = function (amount, daily) {
-  const user = auth.currentUser;
-  if (!user) return alert("Login required");
+/* ================= PLANS ================= */
 
-  database.ref("users/" + user.uid).update({
-    package: "$" + amount,
-    dailyEarning: daily,
-    lastClaim: 0
-  }).then(() => {
-    alert("Package activated");
-  });
-};
-
-// ================= DAILY CLAIM =================
-window.claimDaily = function () {
+function buyPlan(amount, daily) {
   const user = auth.currentUser;
   if (!user) return;
 
-  const ref = database.ref("users/" + user.uid);
+  db.ref("users/" + user.uid).once("value").then(snap => {
+    if (snap.val().plan) return alert("Plan already active");
+
+    db.ref("users/" + user.uid).update({
+      plan: amount,
+      dailyIncome: daily
+    });
+    alert("Plan Activated!");
+  });
+}
+
+/* ================= DAILY CLAIM ================= */
+
+function claimDaily() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const ref = db.ref("users/" + user.uid);
   ref.once("value").then(snap => {
     const d = snap.val();
     const now = Date.now();
 
-    if (now - (d.lastClaim || 0) >= 86400000) {
-      ref.update({
-        balance: (d.balance || 0) + (d.dailyEarning || 0),
-        lastClaim: now
-      });
-      alert("Daily earning added");
-    } else {
-      alert("Already claimed today");
-    }
-  });
-};
+    if (now - d.lastClaim < 86400000)
+      return alert("Already claimed today");
 
-// ================= LOGOUT =================
-window.logout = function () {
-  auth.signOut().then(() => location.href = "login.html");
-};
+    ref.update({
+      balance: d.balance + d.dailyIncome,
+      earned: d.earned + d.dailyIncome,
+      lastClaim: now
+    });
+    alert("Income Added");
+  });
+}
+
+/* ================= PKR → USD ================= */
+
+function convertPKR() {
+  const pkr = Number(pkrInput.value);
+  usdOutput.innerText = (pkr / 300).toFixed(2);
+}
+
+/* ================= DASHBOARD LOAD ================= */
+
+auth.onAuthStateChanged(user => {
+  if (!user && location.pathname.includes("dashboard"))
+    location.href = "index.html";
+
+  if (user && location.pathname.includes("dashboard")) {
+    db.ref("users/" + user.uid).on("value", snap => {
+      const d = snap.val();
+      totalIncome.innerText = d.balance;
+      earnedIncome.innerText = d.earned;
+      referralIncome.innerText = d.referral;
+    });
+  }
+});
