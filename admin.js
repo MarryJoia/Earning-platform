@@ -8,127 +8,125 @@ const firebaseConfig = {
   projectId: "earning-platform-a267f",
   storageBucket: "earning-platform-a267f.firebasestorage.app",
   messagingSenderId: "785014377238",
-  appId: "1:785014377238:web:3ee94e861b97f4a31c1e37",
-  measurementId: "G-QRM1VKP98G"
+  appId: "1:785014377238:web:e693e96aacbe4b151c1e37",
+  measurementId: "G-CJTYVGW3PM"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
 // ------------------------
-// ADMIN LOGIN
+// Admin Login
 // ------------------------
-function adminLogin(){
-  const email=document.getElementById('adminEmail').value;
-  const password=document.getElementById('adminPassword').value;
-  auth.signInWithEmailAndPassword(email,password)
-  .then(()=>window.location.href='admin.html')
-  .catch(e=>alert(e.message));
+function adminLogin() {
+  const email = document.getElementById('adminEmail').value;
+  const password = document.getElementById('adminPassword').value;
+  if (!email || !password) return alert('Enter email & password');
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => window.location.href = 'admin.html')
+    .catch(err => alert(err.message));
 }
 
 // ------------------------
-// ADMIN DASHBOARD
+// Logout
 // ------------------------
-if(document.getElementById('usersTable')){
-  auth.onAuthStateChanged(user=>{
-    if(!user) window.location.href='admin-login.html';
-    loadUsers();
-    loadDeposits();
-    loadWithdraws();
-  });
+function logoutAdmin() {
+  auth.signOut().then(() => window.location.href = 'admin-login.html');
 }
 
-function loadUsers(){
-  db.ref('users').once('value').then(snap=>{
-    const tbody=document.querySelector('#usersTable tbody');
-    tbody.innerHTML='';
-    snap.forEach(u=>{
-      const data=u.val();
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${data.email}</td>
-                     <td>$${(data.totalBalance||0).toFixed(2)}</td>
-                     <td>$${(data.earnedIncome||0).toFixed(2)}</td>
-                     <td>$${(data.referralIncome||0).toFixed(2)}</td>
-                     <td>${data.package||'---'}</td>`;
+// ------------------------
+// Load Users
+// ------------------------
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('usersTable')) loadUsers();
+  if (document.getElementById('depositTable')) loadDepositRequests();
+  if (document.getElementById('withdrawTable')) loadWithdrawRequests();
+});
+
+function loadUsers() {
+  const tbody = document.getElementById('usersTable');
+  tbody.innerHTML = '';
+  db.ref('users').once('value').then(snap => {
+    snap.forEach(u => {
+      const data = u.val();
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${data.email}</td>
+                      <td>$${data.totalBalance}</td>
+                      <td>$${data.earnedIncome}</td>
+                      <td>$${data.referralIncome}</td>
+                      <td>${data.package || '-'}</td>`;
       tbody.appendChild(tr);
     });
   });
 }
 
-function loadDeposits(){
-  db.ref('deposits').once('value').then(snap=>{
-    const tbody=document.querySelector('#depositTable tbody');
-    tbody.innerHTML='';
-    snap.forEach(u=>{
-      const uid=u.key;
-      const userRef=db.ref('users/'+uid);
-      u.forEach(d=>{
-        const data=d.val();
-        if(data.status!=='Pending') return;
-        userRef.once('value').then(uSnap=>{
-          const email=uSnap.val().email;
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>${email}</td>
-                          <td>$${data.amountUSD.toFixed(2)}</td>
-                          <td>PKR ${data.amountPKR}</td>
-                          <td><a href="${data.screenshot}" target="_blank">View</a></td>
+// ------------------------
+// Deposit Requests
+// ------------------------
+function loadDepositRequests() {
+  const tbody = document.getElementById('depositTable');
+  tbody.innerHTML = '';
+  db.ref('deposits').once('value').then(snap => {
+    snap.forEach(userSnap => {
+      userSnap.forEach(depSnap => {
+        const d = depSnap.val();
+        if (d.status === 'Pending') {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${d.email || 'User'}</td>
+                          <td>$${d.amountUSD.toFixed(2)}</td>
+                          <td>PKR ${d.amountPKR}</td>
+                          <td><a href="${d.screenshot}" target="_blank">View</a></td>
                           <td>
-                            <button onclick="approveDeposit('${uid}','${d.key}',${data.amountUSD})">Approve</button>
+                            <button onclick="approveDeposit('${userSnap.key}','${depSnap.key}')">Approve</button>
                           </td>`;
           tbody.appendChild(tr);
-        });
+        }
       });
     });
   });
 }
 
-function approveDeposit(uid,key,usd){
-  if(confirm('Approve this deposit?')){
-    db.ref(`deposits/${uid}/${key}`).update({status:'Approved'});
-    db.ref(`users/${uid}`).once('value').then(snap=>{
-      const totalBalance=snap.val().totalBalance||0;
-      db.ref(`users/${uid}`).update({totalBalance:totalBalance+usd});
-      alert('Deposit approved!');
-      loadDeposits();
-      loadUsers();
-    });
-  }
+function approveDeposit(uid, depId) {
+  db.ref(`deposits/${uid}/${depId}`).update({status:'Approved'});
+  db.ref('users/' + uid).once('value').then(snap=>{
+    const current = snap.val().totalBalance || 0;
+    const depositUSD = snap.val().depositUSD || 0;
+    const added = depositUSD || 0;
+    db.ref('users/' + uid).update({totalBalance: current + added});
+    loadDepositRequests();
+    alert('Deposit approved!');
+  });
 }
 
-function loadWithdraws(){
-  db.ref('withdrawals').once('value').then(snap=>{
-    const tbody=document.querySelector('#withdrawTable tbody');
-    tbody.innerHTML='';
-    snap.forEach(u=>{
-      const uid=u.key;
-      const userRef=db.ref('users/'+uid);
-      u.forEach(w=>{
-        const data=w.val();
-        if(data.status!=='Pending') return;
-        userRef.once('value').then(uSnap=>{
-          const email=uSnap.val().email;
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>${email}</td>
-                          <td>$${data.amount}</td>
-                          <td>${data.method}</td>
-                          <td>${data.account}</td>
+// ------------------------
+// Withdraw Requests
+// ------------------------
+function loadWithdrawRequests() {
+  const tbody = document.getElementById('withdrawTable');
+  tbody.innerHTML = '';
+  db.ref('withdrawals').once('value').then(snap => {
+    snap.forEach(userSnap => {
+      userSnap.forEach(wSnap => {
+        const w = wSnap.val();
+        if (w.status === 'Pending') {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${w.email || 'User'}</td>
+                          <td>$${w.amount}</td>
+                          <td>${w.method}</td>
+                          <td>${w.account}</td>
                           <td>
-                            <button onclick="approveWithdraw('${uid}','${w.key}')">Approve</button>
+                            <button onclick="approveWithdraw('${userSnap.key}','${wSnap.key}')">Approve</button>
                           </td>`;
           tbody.appendChild(tr);
-        });
+        }
       });
     });
   });
 }
 
-function approveWithdraw(uid,key){
-  if(confirm('Approve this withdrawal?')){
-    db.ref(`withdrawals/${uid}/${key}`).update({status:'Approved'});
-    alert('Withdraw approved!');
-    loadWithdraws();
-    loadUsers();
-  }
+function approveWithdraw(uid, wId) {
+  db.ref(`withdrawals/${uid}/${wId}`).update({status:'Approved'});
+  loadWithdrawRequests();
+  alert('Withdraw approved!');
 }
-
-function logoutAdmin(){ auth.signOut().then(()=>window.location.href='admin-login.html'); }
