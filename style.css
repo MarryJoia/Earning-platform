@@ -1,20 +1,135 @@
-body{font-family:'Arial',sans-serif;background:#f4f6f9;margin:0;padding:0;}
-.auth-container, .dashboard-container, .deposit-container, .withdraw-container, .admin-container{
-  max-width:900px;margin:30px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);
+/* ----------------------
+   General Styles
+---------------------- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7f9;
+  color: #333;
 }
-.auth-container input, .deposit-container input, .withdraw-container input, .admin-container input, select{
-  width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc;
+
+h1, h2, h3 {
+  color: #222;
+  text-align: center;
 }
-button{background:#4CAF50;color:#fff;padding:12px 20px;border:none;border-radius:8px;cursor:pointer;margin:5px;transition:.3s;}
-button:hover{background:#45a049;}
-.balance-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:30px;}
-.card{background:#fff;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05);text-align:center;}
-.card h3{margin-bottom:10px;color:#555;}
-.card p{font-size:1.5em;font-weight:bold;}
-.daily-income{margin-bottom:25px;background:#fff;padding:15px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05);text-align:center;}
-.packages button, .actions button, #collectBtn{margin:5px;}
-ul{list-style:none;padding:0;}
-ul li{background:#f4f6f9;margin:5px 0;padding:10px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.05);}
-table{width:100%;border-collapse:collapse;margin-bottom:20px;}
-th,td{padding:8px;text-align:center;border:1px solid #ccc;}
-th{background:#f0f0f0;}
+
+button {
+  cursor: pointer;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  margin: 5px 0;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+input, select {
+  padding: 10px;
+  width: 100%;
+  margin: 5px 0 15px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* ----------------------
+   Auth Pages (Login / Signup)
+---------------------- */
+.auth-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+/* ----------------------
+   Dashboard
+---------------------- */
+.dashboard-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.balance-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.balance-cards .card {
+  background: #fff;
+  padding: 20px;
+  margin: 10px;
+  flex: 1 1 200px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.daily-income, .packages, .referral, .actions {
+  background: #fff;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+/* ----------------------
+   Deposit / Withdraw
+---------------------- */
+.deposit-container, .withdraw-container, .admin-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+}
+
+a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ----------------------
+   Responsive
+---------------------- */
+@media screen and (max-width: 768px) {
+  .balance-cards {
+    flex-direction: column;
+  }
+
+  .dashboard-container, .deposit-container, .withdraw-container {
+    padding: 10px;
+  }
+}
