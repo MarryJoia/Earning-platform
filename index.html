@@ -3,62 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login / Signup</title>
+<title>Earning Platform - Login / Signup</title>
+<link rel="stylesheet" href="style.css">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="app.js" defer></script>
 </head>
 <body>
-<h1>Login / Signup Test</h1>
-<input type="email" id="email" placeholder="Email"><br>
-<input type="password" id="password" placeholder="Password"><br>
-<input type="text" id="referralCode" placeholder="Referral Code (optional)"><br>
-<button id="signupBtn">Sign Up</button>
-<button id="loginBtn">Login</button>
-
-<script>
-document.addEventListener('DOMContentLoaded',()=>{
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCHX45QbjATYaI5yO50ghgSoZP98yXo3Hs",
-  authDomain: "earning-platform-a267f.firebaseapp.com",
-  databaseURL: "https://earning-platform-a267f-default-rtdb.firebaseio.com",
-  projectId: "earning-platform-a267f",
-  storageBucket: "earning-platform-a267f.firebasestorage.app",
-  messagingSenderId: "785014377238",
-  appId: "1:785014377238:web:3ee94e861b97f4a31c1e37",
-  measurementId: "G-QRM1VKP98G"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-// Signup
-document.getElementById('signupBtn').addEventListener('click', ()=>{
-  const email=document.getElementById('email').value;
-  const password=document.getElementById('password').value;
-  const referral=document.getElementById('referralCode').value.trim();
-  if(!email || !password){ alert('Enter email & password'); return; }
-  auth.createUserWithEmailAndPassword(email,password)
-  .then(user=>{
-    const uid=user.user.uid;
-    const myReferralCode=uid.substring(0,6).toUpperCase();
-    db.ref('users/'+uid).set({email,totalBalance:0,earnedIncome:0,referralIncome:0,myReferralCode,package:null,dailyIncome:0,lastCollected:0});
-    alert('Signup successful! Referral code: '+myReferralCode);
-  }).catch(e=>alert('Signup error: '+e.message));
-});
-
-// Login
-document.getElementById('loginBtn').addEventListener('click', ()=>{
-  const email=document.getElementById('email').value;
-  const password=document.getElementById('password').value;
-  if(!email || !password){ alert('Enter email & password'); return; }
-  auth.signInWithEmailAndPassword(email,password)
-  .then(()=>alert('Login successful!'))
-  .catch(e=>alert('Login error: '+e.message));
-});
-
-});
-</script>
+<div class="auth-container">
+    <h1>Login / Signup</h1>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="referralCode" placeholder="Referral Code (optional)">
+    <button id="signupBtn">Sign Up</button>
+    <button id="loginBtn">Login</button>
+</div>
 </body>
 </html>
